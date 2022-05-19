@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- name space는 AreaRepository의 fully qualified name으로 설정한다. -->
+<mapper namespace="com.ssafy.happyhouse.repository.AreaRepository">
+	
+	<!-- 사용자 정보를 저장한다. id는 repo클래스의 메소드 이름과 일치시킨다. -->
+	<select id="findAllSidoes" resultType="com.ssafy.happyhouse.model.area.Sido">
+		SELECT id, name FROM sido
+	</select>
+	
+	<select id="findAllSiguguns" parameterType="int" resultType="com.ssafy.happyhouse.model.area.Sigugun">
+		SELECT id, name, sido_id FROM sigugun WHERE sido_id=#{sidoId}
+	</select>
+	
+	<select id="findAllUpmyundongs" parameterType="int" resultType="com.ssafy.happyhouse.model.area.Upmyundong">
+		SELECT name, code, lat, lng, sigugun_id FROM upmyundong WHERE sigugun_id=#{sigugunId}
+	</select>
+
+</mapper>

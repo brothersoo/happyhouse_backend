@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.ssafy.happyhouse.repository.UserMapper" >
+
+	<select id="idCheck" parameterType="string" resultType="int">
+		select count(userid)
+		from userinfo
+		where userid = #{userid}
+	</select>
+
+	<insert id="registerUser" parameterType="UserDto">
+		insert into userinfo (userid, userpwd, username, useraddr, usertel, joindate)
+		values (#{userId}, #{userPwd}, #{userName}, #{userAddr}, #{userTel}, now())
+	</insert>
+
+	<select id="login" parameterType="map" resultType="UserDto">
+		select userid, username
+		from userinfo
+		where userid = #{userId} and userpwd = #{userPwd}
+	</select>
+	
+	<select id="listUser" resultType="UserDto">
+		<!-- select userid, userpwd, username, email, date_format(joindate, '%y.%m.%d') joindate -->
+		select *
+		from userinfo;
+		<!-- order by joindate desc; -->
+	</select>
+	
+	<select id="getUser" parameterType="String" resultType="userdto">
+		select userid, userpwd, username, useraddr, usertel, joindate
+		from userinfo
+		where userid = #{userid}
+	</select>
+	
+	<update id="updateUser" parameterType="UserDto">
+		update userinfo
+		<trim prefix="set" suffixOverrides=",">
+			<if test="userPwd != null">userpwd = #{userPwd},</if>
+			<if test="userName != null">username = #{userName},</if>
+			<if test="userAddr != null">useraddr = #{userAddr},</if>
+			<if test="userTel != null">usertel = #{userTel},</if>
+		</trim>
+		where userid = #{userId}
+	</update>
+	
+	<delete id="deleteUser" parameterType="String">
+		delete from userinfo
+		where userid = #{userid}
+	</delete>
+
+</mapper>

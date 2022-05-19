@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.ssafy.happyhouse.repository.QnAMapper" >
+
+	<!-- 게시글 전체 조회 -->
+	<select id="listQnA" resultType="com.ssafy.happyhouse.model.QnADto">
+		select id, title, content, user_name userName, created_at createdAt, updated_at updatedAt
+		from qna
+		order by created_at desc
+	</select>
+
+	<!-- 게시글 등록 -->
+	<insert id="createQnA" parameterType="com.ssafy.happyhouse.model.QnADto">
+		insert into qna(
+			title, content, user_name
+		) values (
+			#{title}, #{content}, #{userName}
+		)
+	</insert>
+
+	<select id="findById" parameterType="Long" resultType="com.ssafy.happyhouse.model.QnADto">
+		SELECT id, title, content, user_name userName, created_at createdAt, updated_at updatedAt
+		FROM QnA
+		WHERE id = #{id}
+		order by created_at desc
+	</select>
+
+	<update id="update" parameterType="com.ssafy.happyhouse.model.QnADto">
+		UPDATE QnA SET title = #{title}, content = #{content} where id = #{id}
+	</update>
+
+	<delete id="deleteById" parameterType="Long">
+		DELETE FROM QnA WHERE id = #{id}
+	</delete>
+</mapper>
