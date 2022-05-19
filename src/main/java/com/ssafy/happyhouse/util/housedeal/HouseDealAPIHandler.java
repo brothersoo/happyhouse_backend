@@ -1,20 +1,17 @@
-package com.ssafy.happyhouse.util.xmlparser;
+package com.ssafy.happyhouse.util.housedeal;
 
+import com.ssafy.happyhouse.domain.housedeal.DealInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.ssafy.happyhouse.model.house.HouseDeal;
 
 public class HouseDealAPIHandler {
 	
@@ -28,7 +25,7 @@ public class HouseDealAPIHandler {
 		return houseDealAPIHandler;
 	}
 	
-	public List<HouseDeal> getMonthlyAreaHouseDeal(String code, int dealYear, int dealMonth)
+	public List<DealInfo> getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth, Long upmyundongId)
 			throws IOException, ParserConfigurationException, SAXException {
 		String dealDate;
 		if (dealMonth < 10) {
@@ -51,12 +48,12 @@ public class HouseDealAPIHandler {
 		InputStream in = conn.getInputStream();
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
-		HouseDealSaxHandler handler = new HouseDealSaxHandler();
+		HouseDealSaxHandler handler = new HouseDealSaxHandler(upmyundongId);
 		
 		InputSource inputSource = new InputSource(in);
 		inputSource.setEncoding("UTF-8");
 		saxParser.parse(inputSource, handler);
 		
-		return handler.getHouseDeals();
+		return handler.getDealInfos();
 	}
 }
