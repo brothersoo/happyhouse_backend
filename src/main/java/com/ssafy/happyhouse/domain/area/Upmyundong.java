@@ -1,5 +1,6 @@
 package com.ssafy.happyhouse.domain.area;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
 import java.util.List;
 import javax.persistence.Column;
@@ -19,8 +20,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Getter
-@Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "upmyundong")
+@Entity
 public class Upmyundong {
 
   @Id
