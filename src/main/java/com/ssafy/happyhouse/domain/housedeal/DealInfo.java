@@ -1,5 +1,6 @@
 package com.ssafy.happyhouse.domain.housedeal;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "deal_info")
 @Entity
 public class DealInfo {
@@ -41,6 +43,10 @@ public class DealInfo {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "house_info_id")
   private HouseInfo houseInfo;
+
+  public void setPersistedHouseInfo(HouseInfo houseInfo) {
+    this.houseInfo = houseInfo;
+  }
 
   @Builder
   public DealInfo(Long id, String type, int floor, int price,float exclusivePrivateArea,

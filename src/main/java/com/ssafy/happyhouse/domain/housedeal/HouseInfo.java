@@ -1,5 +1,6 @@
 package com.ssafy.happyhouse.domain.housedeal;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import java.util.List;
 import java.util.Objects;
@@ -18,12 +19,13 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "house_info")
 @Entity
-@Table(name = "HouseInfo")
 public class HouseInfo {
 
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   private String aptName;
