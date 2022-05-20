@@ -2,6 +2,9 @@ package com.ssafy.happyhouse.service.housedeal;
 
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
 import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
+import com.ssafy.happyhouse.dto.response.DateRange;
+import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
 import com.ssafy.happyhouse.repository.housedeal.DealInfoRepository;
 import com.ssafy.happyhouse.repository.housedeal.HouseInfoRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
@@ -13,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
@@ -69,7 +71,8 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       persistedHouseInfosMap.put(houseInfo, houseInfo);
     }
 
-    Set<DealInfo> persistedDealInfos = new HashSet<>(dealInfoRepository.findByCodeYearMonthWithHouseInfo(code, year, month));
+    Set<DealInfo> persistedDealInfos
+        = new HashSet<>(dealInfoRepository.findByCodeYearMonthWithHouseInfo(code, year, month));
 
     List<DealInfo> newDealInfos = new ArrayList<>();
     Map<HouseInfo, HouseInfo> newHouseInfos = new HashMap<>();
@@ -93,5 +96,15 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     dealInfoRepository.saveAll(newDealInfos);
 
     return new int[]{newHouseInfos.size(), newDealInfos.size()};
+  }
+
+  @Override
+  public AverageDealsInRange getDealsByCodeAndDateRange(String code,
+      Long houseId, DateRange dateRange) {
+    List<AveragePricePerUnit> houseAveragePrice =
+        dealInfoRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
+            dateRange.getFromYear(), dateRange.getToYear(),
+            dateRange.getFromMonth(), dateRange.getToMonth(), dateRange.getType());
+    return new AverageDealsInRange(dateRange, houseAveragePrice);
   }
 }
