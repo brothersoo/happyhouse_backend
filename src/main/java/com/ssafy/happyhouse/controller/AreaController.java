@@ -18,11 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/area")
 @CrossOrigin(origins = "/*", methods = {RequestMethod.GET , RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
-@RequiredArgsConstructor
 @RestController
 public class AreaController {
 
-  private final AreaFacadeServiceImpl areaService;
+  private AreaFacadeServiceImpl areaService;
+
+  public AreaController(AreaFacadeServiceImpl areaService) {
+    this.areaService = areaService;
+  }
 
   @GetMapping("/sido")
   @ApiOperation(value="등록된 특별시/도를 반환합니다.", response=Sido.class)

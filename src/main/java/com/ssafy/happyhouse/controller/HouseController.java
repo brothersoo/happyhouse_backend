@@ -19,11 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/house")
 @CrossOrigin(origins = "/*", methods = {RequestMethod.GET , RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
-@RequiredArgsConstructor
 @RestController
 public class HouseController {
 
-  @NonNull private HouseDealFacadeService houseService;
+  private HouseDealFacadeService houseService;
+
+  public HouseController(HouseDealFacadeService houseService) {
+    this.houseService = houseService;
+  }
 
   @GetMapping("/deal")
   @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 가져옵니다.", response= DealInfo.class)

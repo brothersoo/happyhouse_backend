@@ -10,13 +10,20 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
 @Service
 public class AreaFacadeServiceImpl {
 
-  private final SidoRepository sidoRepository;
-  private final SigugunRepository sigugunRepository;
-  private final UpmyundongRepository upmyundongRepository;
+  private SidoRepository sidoRepository;
+  private SigugunRepository sigugunRepository;
+  private UpmyundongRepository upmyundongRepository;
+
+  public AreaFacadeServiceImpl(SidoRepository sidoRepository,
+      SigugunRepository sigugunRepository,
+      UpmyundongRepository upmyundongRepository) {
+    this.sidoRepository = sidoRepository;
+    this.sigugunRepository = sigugunRepository;
+    this.upmyundongRepository = upmyundongRepository;
+  }
 
   public List<Sido> searchAllSidos() {
     return sidoRepository.findAll();

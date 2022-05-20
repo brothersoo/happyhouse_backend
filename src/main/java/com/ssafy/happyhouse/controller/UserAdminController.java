@@ -35,9 +35,12 @@ import io.swagger.annotations.ApiOperation;
 public class UserAdminController {
 
 private static final Logger logger = LoggerFactory.getLogger(UserAdminController.class);
-	
-	@Autowired
+
 	private UserService userService;
+
+	public UserAdminController(UserService userService) {
+		this.userService = userService;
+	}
 
 	@GetMapping(value = "/user")
 	public ResponseEntity<?> userList() {
