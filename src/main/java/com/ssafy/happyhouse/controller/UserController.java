@@ -39,10 +39,13 @@ public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-	@Autowired
 	private UserService userService;
-	
-	@GetMapping("/register")	
+
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
+
+	@GetMapping("/register")
 	public String register() {
 		return "user/register";
 	}

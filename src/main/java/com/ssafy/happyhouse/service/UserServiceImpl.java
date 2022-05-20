@@ -12,8 +12,11 @@ import com.ssafy.happyhouse.repository.UserMapper;
 @Service
 public class UserServiceImpl implements UserService {
 
-	@Autowired
 	private UserMapper userMapper;
+
+	public UserServiceImpl(UserMapper userMapper) {
+		this.userMapper = userMapper;
+	}
 	
 	@Override
 	public int idCheck(String checkId) throws Exception{

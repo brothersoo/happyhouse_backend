@@ -18,15 +18,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
 
-@RequiredArgsConstructor
 @Service
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
-  private final DealInfoRepository dealInfoRepository;
-
-  private final HouseInfoRepository houseInfoRepository;
-
   private HouseDealAPIHandler houseDealAPIHandler = HouseDealAPIHandler.getInstance();
+
+  private DealInfoRepository dealInfoRepository;
+
+  private HouseInfoRepository houseInfoRepository;
+
+  public HouseDealFacadeServiceImpl(
+      DealInfoRepository dealInfoRepository,
+      HouseInfoRepository houseInfoRepository) {
+    this.dealInfoRepository = dealInfoRepository;
+    this.houseInfoRepository = houseInfoRepository;
+  }
 
   @Override
   public List<DealInfo> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
