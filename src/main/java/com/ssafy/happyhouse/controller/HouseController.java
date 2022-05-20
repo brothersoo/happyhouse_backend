@@ -7,6 +7,7 @@ import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -45,11 +46,11 @@ public class HouseController {
   public ResponseEntity<?> getHouseAverageDealsInRangeForGraph(
       @RequestParam String code, @RequestParam Long houseId, @RequestParam String type,
       @RequestParam Integer fromYear, @RequestParam Integer toYear,
-      @RequestParam Integer fromMonth, @RequestParam Integer toMonth) {
+      @RequestParam Optional<Integer> fromMonth, @RequestParam Optional<Integer> toMonth) {
     try {
       AverageDealsInRange averageDealsInRange
           = houseService.getDealsByCodeAndDateRange(code, houseId,
-          new DateRange(type, fromYear, toYear, fromMonth, toMonth));
+          new DateRange(type, fromYear, toYear, fromMonth.get(), toMonth.get()));
       return new ResponseEntity<>(averageDealsInRange, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);
