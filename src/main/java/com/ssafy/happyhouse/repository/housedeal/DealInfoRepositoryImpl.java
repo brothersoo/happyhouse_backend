@@ -48,7 +48,7 @@ public class DealInfoRepositoryImpl implements DealInfoRepositoryCustom {
 
     return queryFactory.select(Projections.fields(AveragePricePerUnit.class,
             houseInfo.aptName.as("name"), group.as("date"),
-            dealInfo.price.avg().as("avgPrice")))
+            dealInfo.price.avg().as("avgPrice"), dealInfo.count().as("dealNumber")))
         .from(dealInfo)
         .leftJoin(dealInfo.houseInfo, houseInfo)
         .join(houseInfo.upmyundong, upmyundong)

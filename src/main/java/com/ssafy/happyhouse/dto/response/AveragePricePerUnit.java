@@ -12,4 +12,5 @@ public class AveragePricePerUnit {
   private String name;
   private int date;
   private double avgPrice;
+  private long dealNumber;
 }
