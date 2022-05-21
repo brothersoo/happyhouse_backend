@@ -2,11 +2,11 @@ package com.ssafy.happyhouse.controller;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,20 +21,16 @@ import com.ssafy.happyhouse.service.QnAService;
 
 import io.swagger.annotations.ApiOperation;
 
-@CrossOrigin(origins = { "*" }, maxAge = 6000)
-@RestController
+@RequiredArgsConstructor
 @RequestMapping("/qna")
+@RestController
 public class QnAController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QnAController.class);
 	private static final String SUCCESS = "success";
 	private static final String FAIL = "fail";
 
-	private QnAService qnaService;
-
-	public QnAController(QnAService qnaService) {
-		this.qnaService = qnaService;
-	}
+	private final QnAService qnaService;
 	
 	@ApiOperation(value = "모든 게시글의 정보를 반환한다.", response = List.class)
 	@GetMapping

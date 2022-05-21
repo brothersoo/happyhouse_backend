@@ -2,19 +2,17 @@ package com.ssafy.happyhouse.service;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.happyhouse.model.QnADto;
 import com.ssafy.happyhouse.repository.QnAMapper;
 
+@RequiredArgsConstructor
 @Service
 public class QnAServiceImpl implements QnAService{
 
-	private QnAMapper qnaMapper;
-
-	public QnAServiceImpl(QnAMapper qnaMapper) {
-		this.qnaMapper = qnaMapper;
-	}
+	private final QnAMapper qnaMapper;
 
 	@Override
 	public boolean createQnA(QnADto qnaDto) {

@@ -3,15 +3,11 @@ package com.ssafy.happyhouse.controller;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.happyhouse.model.UserDto;
@@ -28,19 +23,15 @@ import com.ssafy.happyhouse.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-@RestController
-@RequestMapping("/admin")
-@CrossOrigin("*")
+@RequiredArgsConstructor
 @Api("어드민 컨트롤러 V1")
+@RequestMapping("/admin")
+@RestController
 public class UserAdminController {
 
 private static final Logger logger = LoggerFactory.getLogger(UserAdminController.class);
 
-	private UserService userService;
-
-	public UserAdminController(UserService userService) {
-		this.userService = userService;
-	}
+	private final UserService userService;
 
 	@GetMapping(value = "/user")
 	public ResponseEntity<?> userList() {
@@ -108,9 +99,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdminController
 			return exceptionHandling(e);
 		}
 	}
-	
-	
-	
+
   @ApiOperation(value = "회원정보검색", notes = "회원이름정보를 검색합니다.")
   @GetMapping(value = "/user/search") 
   public ResponseEntity<?> userSearch(String keyword) { 

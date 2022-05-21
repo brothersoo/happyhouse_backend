@@ -3,21 +3,18 @@ package com.ssafy.happyhouse.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.happyhouse.model.UserDto;
 import com.ssafy.happyhouse.repository.UserMapper;
 
+@RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
-	private UserMapper userMapper;
+	private final UserMapper userMapper;
 
-	public UserServiceImpl(UserMapper userMapper) {
-		this.userMapper = userMapper;
-	}
-	
 	@Override
 	public int idCheck(String checkId) throws Exception{
 		return userMapper.idCheck(checkId);	// 0 or 1
