@@ -2,6 +2,8 @@ package com.ssafy.happyhouse.controller;
 
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
+import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class HouseController {
 
   private final HouseDealFacadeService houseService;
+
+  @GetMapping
+  @ApiOperation("")
+  public ResponseEntity<?> getHousesInArea(@RequestParam String code) {
+    try {
+      List<HouseInfo> houses = houseService.getHouseInfosInArea(code);
+      return new ResponseEntity<>(houses, HttpStatus.OK);
+    } catch (Exception e) {
+      return exceptionHandling(e);
+    }
+  }
 
   @GetMapping("/deal")
   @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 가져옵니다.", response= DealInfo.class)
@@ -54,10 +68,9 @@ public class HouseController {
 
   @PutMapping("/deal/update")
   @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 데이터베이스에 갱신합니다.", response= Sido.class)
-  public ResponseEntity<?> updateDealsInAreaYearMonth(@RequestParam String code,
-      @RequestParam int year, @RequestParam int month, @RequestParam long umdId) {
+  public ResponseEntity<?> updateDealsInAreaYearMonth(@RequestBody DealUpdateDto dealUpdateDto) {
     try {
-      int[] updatedNum = houseService.updateDeal(code, year, month, umdId);
+      int[] updatedNum = houseService.updateDeal(dealUpdateDto);
       return new ResponseEntity<>(updatedNum, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);

@@ -10,4 +10,7 @@ public interface HouseInfoRepository extends JpaRepository<HouseInfo, Long> {
 
   @Query("SELECT h FROM HouseInfo h WHERE upmyundong_id = :upmyundongId")
   List<HouseInfo> findByUpmyundongId(@Param("upmyundongId") Long upmyundongId);
+
+  @Query("SELECT h FROM HouseInfo h JOIN h.upmyundong u WHERE u.code LIKE :code%")
+  List<HouseInfo> findByCodeStartingWith(@Param("code") String code);
 }
