@@ -8,26 +8,21 @@ import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RequestMapping("/house")
-@CrossOrigin(origins = "/*", methods = {RequestMethod.GET , RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 @RestController
 public class HouseController {
 
-  private HouseDealFacadeService houseService;
-
-  public HouseController(HouseDealFacadeService houseService) {
-    this.houseService = houseService;
-  }
+  private final HouseDealFacadeService houseService;
 
   @GetMapping("/deal")
   @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 가져옵니다.", response= DealInfo.class)
