@@ -2,11 +2,12 @@ package com.ssafy.happyhouse.controller;
 
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
+import com.ssafy.happyhouse.dto.response.DateRange;
+import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,7 +35,23 @@ public class HouseController {
       @RequestParam int year, @RequestParam int month) {
     try {
       List<DealInfo> deals = houseService.getDealsByCodeDate(code, year, month);
-      return new ResponseEntity<List<DealInfo>>(deals, HttpStatus.OK);
+      return new ResponseEntity<>(deals, HttpStatus.OK);
+    } catch (Exception e) {
+      return exceptionHandling(e);
+    }
+  }
+
+  @GetMapping("/deal_graph")
+  @ApiOperation(value="")
+  public ResponseEntity<?> getHouseAverageDealsInRangeForGraph(
+      @RequestParam String code, @RequestParam Long houseId, @RequestParam String type,
+      @RequestParam Integer fromYear, @RequestParam Integer toYear,
+      @RequestParam Optional<Integer> fromMonth, @RequestParam Optional<Integer> toMonth) {
+    try {
+      AverageDealsInRange averageDealsInRange
+          = houseService.getDealsByCodeAndDateRange(code, houseId,
+          new DateRange(type, fromYear, toYear, fromMonth.get(), toMonth.get()));
+      return new ResponseEntity<>(averageDealsInRange, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);
     }
@@ -46,7 +63,7 @@ public class HouseController {
       @RequestParam int year, @RequestParam int month, @RequestParam long umdId) {
     try {
       int[] updatedNum = houseService.updateDeal(code, year, month, umdId);
-      return new ResponseEntity<int[]>(updatedNum, HttpStatus.OK);
+      return new ResponseEntity<>(updatedNum, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);
     }
@@ -54,6 +71,6 @@ public class HouseController {
 
   private ResponseEntity<String> exceptionHandling(Exception e) {
     e.printStackTrace();
-    return new ResponseEntity<String>("Sorry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>("Sorry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
