@@ -53,7 +53,7 @@ public class HouseDealSaxHandler extends DefaultHandler {
 		} else if (name.equals("일")) {
 			this.dealDay = Integer.parseInt(str);
 		} else if (name.equals("전용면적")) {
-			this.exclusivePrivateArea = Float.parseFloat(str);
+			this.exclusivePrivateArea = (float)(Math.round(Float.parseFloat(str)*1000)/1000.0);
 		} else if (name.equals("지번")) {
 			this.jibun = str;
 		} else if (name.equals("층")) {
