@@ -9,5 +9,5 @@ import org.springframework.data.repository.query.Param;
 public interface HouseInfoRepository extends JpaRepository<HouseInfo, Long> {
 
   @Query("SELECT h FROM HouseInfo h WHERE upmyundong_id = :upmyundongId")
-  List<HouseInfo> findByUpmyundongId(@Param(value = "upmyundongId") Long upmyundongId);
+  List<HouseInfo> findByUpmyundongId(@Param("upmyundongId") Long upmyundongId);
 }

@@ -2,6 +2,7 @@ package com.ssafy.happyhouse.repository.housedeal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.ssafy.happyhouse.config.QueryDslConfig;
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
@@ -16,11 +17,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(QueryDslConfig.class)
 class DealInfoRepositoryTest {
 
   @PersistenceContext
@@ -46,7 +49,8 @@ class DealInfoRepositoryTest {
 
   @Test
   void saveTest() {
-    Upmyundong upmyundong = upmyundongRepository.findByCodeStartingWith("11110").get(0);
+    String code = "11110";
+    Upmyundong upmyundong = upmyundongRepository.findByCodeStartingWith(code).get(0);
 
     HouseInfo houseInfo = HouseInfo.builder().buildYear(1996)
         .aptName("GREAT_APT").jibun("1").upmyundong(upmyundong).build();
@@ -54,14 +58,15 @@ class DealInfoRepositoryTest {
     DealInfo dealInfo = DealInfo.builder().dealYear(2000).dealMonth(6).dealDay(10)
         .type("A").price(1).exclusivePrivateArea(1F).floor(1).houseInfo(houseInfo).build();
 
-    dealInfoRepository.save(dealInfo);
+    DealInfo persistedHouseInfo = dealInfoRepository.save(dealInfo);
 
-    assertThat(dealInfoRepository.findAll().size()).isEqualTo(1);
+    assertThat(persistedHouseInfo).isEqualTo(dealInfo);
   }
 
   @Test
   void findByCodeAndDealYearAndDealMonthWithHouseInfo() {
-    Upmyundong upmyundong = upmyundongRepository.findByCodeStartingWith("11110").get(0);
+    String code = "11110";
+    Upmyundong upmyundong = upmyundongRepository.findByCodeStartingWith(code).get(0);
 
     HouseInfo houseInfo = HouseInfo.builder().aptName("aptName").buildYear(2000).jibun("1")
         .upmyundong(upmyundong).build();
@@ -77,7 +82,7 @@ class DealInfoRepositoryTest {
       entityManager.persist(dealInfo);
     }
 
-    List<DealInfo> res = dealInfoRepository.findByCodeYearMonthWithHouseInfo("11110", 1996, 6);
+    List<DealInfo> res = dealInfoRepository.findByCodeYearMonthWithHouseInfo(code, 1996, 6);
     assertThat(res.size()).isEqualTo(5);
 
     for (DealInfo dealInfo : res) {
