@@ -1,6 +1,4 @@
-use happyhouse;
-
--- MySQL Workbench Forward Engineering
+ -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -18,6 +16,13 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `happyhouse` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ;
 USE `happyhouse` ;
+
+DROP TABLE `sido` IF EXISTS;
+DROP TABLE `sigugun` IF EXISTS;
+DROP TABLE `upmyundong` IF EXISTS;
+DROP TABLE `house` IF EXISTS;
+DROP TABLE `house_deal` IF EXISTS;
+
 
 -- -----------------------------------------------------
 -- Table `happyhouse`.`sido`
