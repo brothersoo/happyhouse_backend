@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class AveragePricePerUnit {
 
   private String name;
-  private int date;
+  private String date;
   private double avgPrice;
   private long dealNumber;
 }
