@@ -1,5 +1,7 @@
 package com.ssafy.happyhouse.service.housedeal;
 
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
+
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
 import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
@@ -10,6 +12,7 @@ import com.ssafy.happyhouse.repository.housedeal.DealInfoRepository;
 import com.ssafy.happyhouse.repository.housedeal.HouseInfoRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,8 +35,8 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   @Override
   public List<DealInfo> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
-    return dealInfoRepository.findByCodeYearMonthWithHouseInfo(
-        code, dealYear, dealMonth);
+    return dealInfoRepository.findByCodeAndYearMonthOfDate(
+        code, LocalDate.of(dealYear, dealMonth, 1));
   }
 
   @Override
@@ -41,8 +44,8 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   public int[] updateDeal(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException {
     List<DealInfo> dealInfosFromOpenAPI = new ArrayList<>();
-    Set<DealInfo> persistedDealInfos = new HashSet<>();
 
+    // get persisted house infos
     List<HouseInfo> persistedHouseInfos
         = houseInfoRepository.findByUpmyundongId(dealUpdateDto.getUmdId());
     Map<HouseInfo, HouseInfo> persistedHouseInfosMap = new HashMap<>();
@@ -50,6 +53,15 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       persistedHouseInfosMap.put(houseInfo, houseInfo);
     }
 
+    // get persisted deal infos
+    LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(),
+        dealUpdateDto.getToMonth(), 1).with(lastDayOfMonth());
+    Set<DealInfo> persistedDealInfos = new HashSet<>(
+        dealInfoRepository.findByCodeAndDateBetween(
+            dealUpdateDto.getCode(), fromDate, toDate));
+
+    // api call in date range (monthly)
     for (int year = dealUpdateDto.getFromYear(); year <= dealUpdateDto.getToYear(); year++) {
       int fromMonth = (year == dealUpdateDto.getFromYear()) ? dealUpdateDto.getFromMonth() : 1;
       int toMonth = (year == dealUpdateDto.getToYear()) ? dealUpdateDto.getToMonth() : 12;
@@ -57,8 +69,6 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
         dealInfosFromOpenAPI.addAll(
             houseDealAPIHandler.getMonthlyAreaDealInfo(dealUpdateDto.getCode(), year, month,
                 dealUpdateDto.getUmdId()));
-        persistedDealInfos.addAll(dealInfoRepository.findByCodeYearMonthWithHouseInfo(
-            dealUpdateDto.getCode(), year, month));
       }
     }
 
@@ -89,10 +99,13 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   @Override
   public AverageDealsInRange getDealsByCodeAndDateRange(String code,
       Long houseId, DateRange dateRange) {
+    LocalDate fromDate = LocalDate.of(dateRange.getFromYear(),
+        dateRange.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dateRange.getToYear(),
+        dateRange.getToMonth(), 1).with(lastDayOfMonth());
     List<AveragePricePerUnit> houseAveragePrice =
         dealInfoRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
-            dateRange.getFromYear(), dateRange.getToYear(),
-            dateRange.getFromMonth(), dateRange.getToMonth(), dateRange.getType());
+            fromDate, toDate, dateRange.getType());
     return new AverageDealsInRange(dateRange, houseAveragePrice);
   }
 

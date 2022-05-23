@@ -3,6 +3,7 @@ package com.ssafy.happyhouse.util.housedeal;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
 import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.xml.sax.helpers.DefaultHandler;
@@ -63,7 +64,7 @@ public class HouseDealSaxHandler extends DefaultHandler {
 			HouseInfo houseInfo = HouseInfo.builder().aptName(aptName)
 					.jibun(jibun).buildYear(buildYear).upmyundong(umd).build();
 			DealInfo dealInfo = DealInfo.builder()
-					.dealYear(dealYear).dealMonth(dealMonth).dealDay(dealDay)
+					.dealDate(LocalDate.of(dealYear, dealMonth, dealDay))
 					.type(type).exclusivePrivateArea(exclusivePrivateArea)
 					.price(price).floor(floor).houseInfo(houseInfo).build();
 			dealInfos.add(dealInfo);
