@@ -100,4 +100,15 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
             dateRange.getFromMonth(), dateRange.getToMonth(), dateRange.getType());
     return new AverageDealsInRange(dateRange, houseAveragePrice);
   }
+
+	@Override
+	public List<HouseInfo> getAptInDong(Long upmyundongId) {
+		return houseInfoRepository.findByUpmyundongId(upmyundongId);
+	}
+
+	@Override
+	public List<DealInfo> getDealOfApt(Long hosueId) {
+		List<DealInfo> dealList = dealInfoRepository.findByHouseId(hosueId);
+		return dealList;
+	}
 }

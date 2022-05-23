@@ -1,6 +1,7 @@
 package com.ssafy.happyhouse.service.housedeal;
 
 import com.ssafy.happyhouse.domain.housedeal.DealInfo;
+import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import java.io.IOException;
@@ -17,4 +18,8 @@ public interface HouseDealFacadeService {
 
   AverageDealsInRange getDealsByCodeAndDateRange(String code,
       Long houseId, DateRange dateRange);
+  
+  public List<HouseInfo> getAptInDong(Long upmyundongId);
+  
+  public List<DealInfo> getDealOfApt(Long hosueId);
 }
