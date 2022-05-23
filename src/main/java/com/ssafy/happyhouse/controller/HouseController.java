@@ -1,8 +1,8 @@
 package com.ssafy.happyhouse.controller;
 
 import com.ssafy.happyhouse.domain.area.Sido;
-import com.ssafy.happyhouse.domain.housedeal.DealInfo;
-import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
@@ -31,7 +31,7 @@ public class HouseController {
   @ApiOperation("")
   public ResponseEntity<?> getHousesInArea(@RequestParam String code) {
     try {
-      List<HouseInfo> houses = houseService.getHouseInfosInArea(code);
+      List<House> houses = houseService.getHousesInArea(code);
       return new ResponseEntity<>(houses, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);
@@ -39,11 +39,11 @@ public class HouseController {
   }
 
   @GetMapping("/deal")
-  @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 가져옵니다.", response= DealInfo.class)
+  @ApiOperation(value="지역 코드의 년/월에 발생한 거래 내역을 가져옵니다.", response= HouseDeal.class)
   public ResponseEntity<?> getDealsInAreaYearMonth(@RequestParam String code,
       @RequestParam int year, @RequestParam int month) {
     try {
-      List<DealInfo> deals = houseService.getDealsByCodeDate(code, year, month);
+      List<HouseDeal> deals = houseService.getDealsByCodeDate(code, year, month);
       return new ResponseEntity<>(deals, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);

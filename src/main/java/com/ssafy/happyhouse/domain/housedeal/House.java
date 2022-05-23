@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -20,12 +21,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "house_info")
+@Table(name = "house")
 @Entity
-public class HouseInfo {
+public class House {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "house_id")
   private Long id;
 
   private String aptName;
@@ -38,18 +40,14 @@ public class HouseInfo {
   @JoinColumn(name = "upmyundong_id")
   private Upmyundong upmyundong;
 
-//  @OneToMany(mappedBy = "houseInfo")
-//  private List<DealInfo> dealInfos;
-
   @Builder
-  public HouseInfo(Long id, String aptName, int buildYear, String jibun,
-      Upmyundong upmyundong, List<DealInfo> dealInfos) {
+  public House(Long id, String aptName, int buildYear, String jibun,
+      Upmyundong upmyundong) {
     this.id = id;
     this.aptName = aptName;
     this.buildYear = buildYear;
     this.jibun = jibun;
     this.upmyundong = upmyundong;
-//    this.dealInfos = dealInfos;
   }
 
   @Override
@@ -60,8 +58,8 @@ public class HouseInfo {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    HouseInfo houseInfo = (HouseInfo) o;
-    return aptName.equals(houseInfo.aptName) && upmyundong.getId().equals(houseInfo.upmyundong.getId());
+    House house = (House) o;
+    return aptName.equals(house.aptName) && upmyundong.getId().equals(house.upmyundong.getId());
   }
 
   @Override

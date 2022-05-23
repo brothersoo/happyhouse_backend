@@ -2,14 +2,14 @@ package com.ssafy.happyhouse.service.housedeal;
 
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 
-import com.ssafy.happyhouse.domain.housedeal.DealInfo;
-import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
-import com.ssafy.happyhouse.repository.housedeal.DealInfoRepository;
-import com.ssafy.happyhouse.repository.housedeal.HouseInfoRepository;
+import com.ssafy.happyhouse.repository.housedeal.HouseHouseDealRepository;
+import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -30,12 +30,12 @@ import org.xml.sax.SAXException;
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   private HouseDealAPIHandler houseDealAPIHandler = HouseDealAPIHandler.getInstance();
-  private final DealInfoRepository dealInfoRepository;
-  private final HouseInfoRepository houseInfoRepository;
+  private final HouseHouseDealRepository houseDealRepository;
+  private final HouseRepository houseRepository;
 
   @Override
-  public List<DealInfo> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
-    return dealInfoRepository.findByCodeAndYearMonthOfDate(
+  public List<HouseDeal> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
+    return houseDealRepository.findByCodeAndYearMonthOfDate(
         code, LocalDate.of(dealYear, dealMonth, 1));
   }
 
@@ -43,22 +43,22 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   @Transactional
   public int[] updateDeal(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException {
-    List<DealInfo> dealInfosFromOpenAPI = new ArrayList<>();
+    List<HouseDeal> houseDealInfosFromOpenAPI = new ArrayList<>();
 
-    // get persisted house infos
-    List<HouseInfo> persistedHouseInfos
-        = houseInfoRepository.findByUpmyundongId(dealUpdateDto.getUmdId());
-    Map<HouseInfo, HouseInfo> persistedHouseInfosMap = new HashMap<>();
-    for (HouseInfo houseInfo : persistedHouseInfos) {
-      persistedHouseInfosMap.put(houseInfo, houseInfo);
+    // get persisted houses
+    List<House> persistedHouses
+        = houseRepository.findByUpmyundongId(dealUpdateDto.getUmdId());
+    Map<House, House> persistedHousesMap = new HashMap<>();
+    for (House house : persistedHouses) {
+      persistedHousesMap.put(house, house);
     }
 
-    // get persisted deal infos
+    // get persisted house deals
     LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
     LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(),
         dealUpdateDto.getToMonth(), 1).with(lastDayOfMonth());
-    Set<DealInfo> persistedDealInfos = new HashSet<>(
-        dealInfoRepository.findByCodeAndDateBetween(
+    Set<HouseDeal> persistedHouseDeals = new HashSet<>(
+        houseDealRepository.findByCodeAndDateBetween(
             dealUpdateDto.getCode(), fromDate, toDate));
 
     // api call in date range (monthly)
@@ -66,34 +66,34 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       int fromMonth = (year == dealUpdateDto.getFromYear()) ? dealUpdateDto.getFromMonth() : 1;
       int toMonth = (year == dealUpdateDto.getToYear()) ? dealUpdateDto.getToMonth() : 12;
       for (int month = fromMonth; month <= toMonth; month++) {
-        dealInfosFromOpenAPI.addAll(
+        houseDealInfosFromOpenAPI.addAll(
             houseDealAPIHandler.getMonthlyAreaDealInfo(dealUpdateDto.getCode(), year, month,
                 dealUpdateDto.getUmdId()));
       }
     }
 
-    List<DealInfo> newDealInfos = new ArrayList<>();
-    Map<HouseInfo, HouseInfo> newHouseInfos = new HashMap<>();
+    List<HouseDeal> newHouseDeals = new ArrayList<>();
+    Map<House, House> newHouses = new HashMap<>();
 
-    for (DealInfo dealInfo : dealInfosFromOpenAPI) {
-      if (!persistedHouseInfosMap.containsKey(dealInfo.getHouseInfo())) {
-        newHouseInfos.putIfAbsent(dealInfo.getHouseInfo(), dealInfo.getHouseInfo());
-        if (newHouseInfos.containsKey(dealInfo.getHouseInfo())) {
-          dealInfo.setPersistedHouseInfo(newHouseInfos.get(dealInfo.getHouseInfo()));
+    for (HouseDeal houseDeal : houseDealInfosFromOpenAPI) {
+      if (!persistedHousesMap.containsKey(houseDeal.getHouse())) {
+        newHouses.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
+        if (newHouses.containsKey(houseDeal.getHouse())) {
+          houseDeal.setPersistedHouse(newHouses.get(houseDeal.getHouse()));
         }
       } else {
-        dealInfo.setPersistedHouseInfo(persistedHouseInfosMap.get(dealInfo.getHouseInfo()));
+        houseDeal.setPersistedHouse(persistedHousesMap.get(houseDeal.getHouse()));
       }
 
-      if (!persistedDealInfos.contains(dealInfo)) {
-        newDealInfos.add(dealInfo);
+      if (!persistedHouseDeals.contains(houseDeal)) {
+        newHouseDeals.add(houseDeal);
       }
     }
 
-    houseInfoRepository.saveAll(newHouseInfos.keySet());
-    dealInfoRepository.saveAll(newDealInfos);
+    houseRepository.saveAll(newHouses.keySet());
+    houseDealRepository.saveAll(newHouseDeals);
 
-    return new int[]{newHouseInfos.size(), newDealInfos.size()};
+    return new int[]{newHouses.size(), newHouseDeals.size()};
   }
 
   @Override
@@ -104,13 +104,13 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     LocalDate toDate = LocalDate.of(dateRange.getToYear(),
         dateRange.getToMonth(), 1).with(lastDayOfMonth());
     List<AveragePricePerUnit> houseAveragePrice =
-        dealInfoRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
+        houseDealRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
             fromDate, toDate, dateRange.getType());
     return new AverageDealsInRange(dateRange, houseAveragePrice);
   }
 
   @Override
-  public List<HouseInfo> getHouseInfosInArea(String code) {
-    return houseInfoRepository.findByCodeStartingWith(code);
+  public List<House> getHousesInArea(String code) {
+    return houseRepository.findByCodeStartingWith(code);
   }
 }

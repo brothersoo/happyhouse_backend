@@ -3,9 +3,10 @@ package com.ssafy.happyhouse.repository.housedeal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ssafy.happyhouse.config.QueryDslConfig;
+import com.ssafy.happyhouse.domain.area.Sido;
+import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
-import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
-import com.ssafy.happyhouse.repository.area.UpmyundongRepository;
+import com.ssafy.happyhouse.domain.housedeal.House;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,30 +22,40 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QueryDslConfig.class)
-public class HouseInfoRepositoryTest {
+public class HouseRepositoryTest {
 
   @PersistenceContext
   EntityManager entityManager;
 
   @Autowired
-  HouseInfoRepository houseInfoRepository;
+  HouseRepository houseRepository;
 
-  @Autowired
-  UpmyundongRepository upmyundongRepository;
+  Upmyundong persistBaseArea() {
+    Sido sido = Sido.builder().name("sido").code("SIDO_").build();
+    entityManager.persist(sido);
+    Sigugun sigugun = Sigugun.builder().name("sigugun")
+        .code(sido.getCode() + "SIGUGUN_").sido(sido).build();
+    entityManager.persist(sigugun);
+    Upmyundong upmyundong = Upmyundong.builder().sigugun(sigugun).code(sigugun.getCode() + "UPMYUNDONG_")
+        .name("sigugun").lat(0.1F).lng(01.F).build();
+    entityManager.persist(upmyundong);
+    return upmyundong;
+  }
 
   @Test
   void findByUpmyundongIdTest() {
-    Upmyundong upmyundong = upmyundongRepository.findByCodeStartingWith("11110").get(0);
+    Upmyundong upmyundong = persistBaseArea();
+
     for (int i = 0; i < 1; i++) {
-      HouseInfo houseInfo = HouseInfo.builder().buildYear(1996).jibun("1")
+      House house = House.builder().buildYear(1996).jibun("1")
           .aptName("GOOD_APT" + i).upmyundong(upmyundong).build();
-      entityManager.persist(houseInfo);
+      entityManager.persist(house);
     }
 
-    List<HouseInfo> res = houseInfoRepository.findByUpmyundongId(upmyundong.getId());
+    List<House> res = houseRepository.findByUpmyundongId(upmyundong.getId());
 
-    for (HouseInfo houseInfo : res) {
-      assertThat(houseInfo.getUpmyundong().getCode()).startsWith("11110");
+    for (House house : res) {
+      assertThat(house.getUpmyundong().getCode()).startsWith(upmyundong.getCode());
     }
   }
 }
