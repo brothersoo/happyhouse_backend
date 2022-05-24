@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.repository.housedeal;
+package com.ssafy.happyhouse.integration.repository.housedeal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -8,6 +8,7 @@ import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -30,7 +31,7 @@ class HouseDealRepositoryTest {
   EntityManager entityManager;
 
   @Autowired
-  HouseHouseDealRepository houseDealRepository;
+  HouseDealRepository houseDealRepository;
 
   Upmyundong persistBaseArea() {
     Sido sido = Sido.builder().name("sido").code("SIDO_").build();

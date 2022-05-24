@@ -1,10 +1,11 @@
-package com.ssafy.happyhouse.repository.area;
+package com.ssafy.happyhouse.integration.repository.area;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.javafaker.Faker;
 import com.ssafy.happyhouse.config.QueryDslConfig;
 import com.ssafy.happyhouse.domain.area.Sido;
+import com.ssafy.happyhouse.repository.area.SidoRepository;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

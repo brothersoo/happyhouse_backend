@@ -9,7 +9,6 @@ import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Repository;
 
 @RequiredArgsConstructor
 @Repository
-public class HouseHouseDealRepositoryImpl implements HouseDealRepositoryCustom {
+public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
@@ -46,10 +45,8 @@ public class HouseHouseDealRepositoryImpl implements HouseDealRepositoryCustom {
   }
 
   @Override
-  public List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(String code,
-      long houseId, LocalDate fromDate, LocalDate toDate, String type) {
-
-    NumberPath<Integer> group;
+  public List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
+      LocalDate fromDate, LocalDate toDate, String type) {
 
     StringTemplate formattedDate;
     if (type.equals("month")) {
@@ -70,10 +67,9 @@ public class HouseHouseDealRepositoryImpl implements HouseDealRepositoryCustom {
         .from(houseDeal)
         .leftJoin(houseDeal.house, house)
         .join(house.upmyundong, upmyundong)
-        .where(upmyundong.code.startsWith(code),
-            house.id.eq(houseId),
+        .where(house.id.in(houseIds),
             houseDeal.dealDate.between(fromDate, toDate))
-        .groupBy(formattedDate)
+        .groupBy(house.aptName, formattedDate)
         .orderBy(formattedDate.asc())
         .fetch();
   }

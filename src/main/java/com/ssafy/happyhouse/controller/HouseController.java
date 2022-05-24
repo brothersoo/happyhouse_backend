@@ -6,6 +6,7 @@ import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
+import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
@@ -53,14 +54,14 @@ public class HouseController {
   @GetMapping("/deal_graph")
   @ApiOperation(value="")
   public ResponseEntity<?> getHouseAverageDealsInRangeForGraph(
-      @RequestParam String code, @RequestParam Long houseId, @RequestParam String type,
+      @RequestParam List<Long> houseIds, @RequestParam String type,
       @RequestParam Integer fromYear, @RequestParam Integer toYear,
       @RequestParam Optional<Integer> fromMonth, @RequestParam Optional<Integer> toMonth) {
     try {
-      AverageDealsInRange averageDealsInRange
-          = houseService.getDealsByCodeAndDateRange(code, houseId,
+      ChartData chartData
+          = houseService.getChartDataOfHouses(houseIds,
           new DateRange(type, fromYear, toYear, fromMonth.get(), toMonth.get()));
-      return new ResponseEntity<>(averageDealsInRange, HttpStatus.OK);
+      return new ResponseEntity<>(chartData, HttpStatus.OK);
     } catch (Exception e) {
       return exceptionHandling(e);
     }
