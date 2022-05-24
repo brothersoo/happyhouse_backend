@@ -1,13 +1,16 @@
 package com.ssafy.happyhouse.controller;
 
 import com.ssafy.happyhouse.domain.area.Sido;
+
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
+
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
+
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.Optional;
@@ -76,6 +79,16 @@ public class HouseController {
     } catch (Exception e) {
       return exceptionHandling(e);
     }
+  }
+  
+  @GetMapping("/apt/deal")
+  public ResponseEntity<?> aptDeal(@RequestParam Long houseId) {
+	  try {
+		  List<HouseDeal> deals = houseService.getDealOfApt(houseId);
+		  return new ResponseEntity<>(deals, HttpStatus.OK);
+	  } catch (Exception e) {
+	      return exceptionHandling(e);
+	  }
   }
 
   private ResponseEntity<String> exceptionHandling(Exception e) {
