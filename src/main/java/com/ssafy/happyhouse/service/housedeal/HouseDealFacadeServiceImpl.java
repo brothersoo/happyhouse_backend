@@ -110,7 +110,14 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   }
 
   @Override
+  public List<HouseDeal> getDealOfApt(Long hosueId) {
+	  List<HouseDeal> dealList = houseDealRepository.findByHouseId(hosueId);
+	  return dealList;
+  }
+
+  @Override
   public List<House> getHousesInArea(String code) {
     return houseRepository.findByCodeStartingWith(code);
   }
+
 }
