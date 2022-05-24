@@ -1,5 +1,7 @@
 package com.ssafy.happyhouse.model.area;
 
+@Getter
+@Setter
 public class SidoGugunCodeDto {
 
 	private String sidoCode;
