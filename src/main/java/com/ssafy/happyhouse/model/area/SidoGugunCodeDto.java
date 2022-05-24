@@ -1,5 +1,8 @@
 package com.ssafy.happyhouse.model.area;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Getter
 @Setter
 public class SidoGugunCodeDto {

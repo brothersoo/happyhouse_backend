@@ -30,7 +30,7 @@ class HouseDealRepositoryTest {
   EntityManager entityManager;
 
   @Autowired
-  HouseHouseDealRepository houseDealRepository;
+  HouseDealRepository houseDealRepository;
 
   Upmyundong persistBaseArea() {
     Sido sido = Sido.builder().name("sido").code("SIDO_").build();

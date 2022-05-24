@@ -8,7 +8,7 @@ import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
-import com.ssafy.happyhouse.repository.housedeal.HouseHouseDealRepository;
+import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
 import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   private HouseDealAPIHandler houseDealAPIHandler = HouseDealAPIHandler.getInstance();
-  private final HouseHouseDealRepository houseDealRepository;
+  private final HouseDealRepository houseDealRepository;
   private final HouseRepository houseRepository;
 
   @Override
@@ -111,7 +111,7 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   @Override
   public List<HouseDeal> getDealOfApt(Long hosueId) {
-	  List<HouseDeal> dealList = houseDealRepository.findByHouseId(hosueId);
+	  List<HouseDeal> dealList = houseDealRepository.findByIdOrderByDealDateDesc(hosueId);
 	  return dealList;
   }
 

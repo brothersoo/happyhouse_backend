@@ -21,7 +21,7 @@ import org.springframework.stereotype.Repository;
 
 @RequiredArgsConstructor
 @Repository
-public class HouseHouseDealRepositoryImpl implements HouseDealRepositoryCustom {
+public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
