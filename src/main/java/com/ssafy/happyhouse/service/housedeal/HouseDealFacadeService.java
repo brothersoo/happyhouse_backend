@@ -21,7 +21,7 @@ public interface HouseDealFacadeService {
   AverageDealsInRange getDealsByCodeAndDateRange(String code,
       Long houseId, DateRange dateRange);
   
-  public List<HouseDeal> getDealOfApt(Long hosueId);
+  List<HouseDeal> getDealOfApt(Long hosueId);
 
   List<House> getHousesInArea(String code);
 
