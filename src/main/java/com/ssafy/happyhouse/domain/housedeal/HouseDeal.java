@@ -1,7 +1,9 @@
 package com.ssafy.happyhouse.domain.housedeal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.LocalDate;
 import java.util.Objects;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,12 +20,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "deal_info")
+@Table(name = "house_deal")
 @Entity
-public class DealInfo {
+public class HouseDeal {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "house_deal_id")
   private Long id;
 
   private String type;
@@ -34,32 +37,26 @@ public class DealInfo {
 
   private float exclusivePrivateArea;
 
-  private int dealYear;
-
-  private int dealMonth;
-
-  private int dealDay;
+  private LocalDate dealDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "house_info_id")
-  private HouseInfo houseInfo;
+  @JoinColumn(name = "house_id")
+  private House house;
 
-  public void setPersistedHouseInfo(HouseInfo houseInfo) {
-    this.houseInfo = houseInfo;
+  public void setPersistedHouse(House house) {
+    this.house = house;
   }
 
   @Builder
-  public DealInfo(Long id, String type, int floor, int price,float exclusivePrivateArea,
-      int dealYear, int dealMonth, int dealDay, HouseInfo houseInfo) {
+  public HouseDeal(Long id, String type, int floor, int price,float exclusivePrivateArea,
+      LocalDate dealDate, House house) {
     this.id = id;
     this.type = type;
     this.floor = floor;
     this.price = price;
     this.exclusivePrivateArea = exclusivePrivateArea;
-    this.dealYear = dealYear;
-    this.dealMonth = dealMonth;
-    this.dealDay = dealDay;
-    this.houseInfo = houseInfo;
+    this.dealDate = dealDate;
+    this.house = house;
   }
 
   @Override
@@ -70,17 +67,15 @@ public class DealInfo {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    DealInfo dealInfo = (DealInfo) o;
-    return floor == dealInfo.floor && price == dealInfo.price
-        && Float.compare(dealInfo.exclusivePrivateArea, exclusivePrivateArea) == 0
-        && dealYear == dealInfo.dealYear && dealMonth == dealInfo.dealMonth
-        && dealDay == dealInfo.dealDay && Objects.equals(type, dealInfo.type)
-        && Objects.equals(houseInfo.getId(), dealInfo.houseInfo.getId());
+    HouseDeal houseDeal = (HouseDeal) o;
+    return floor == houseDeal.floor && price == houseDeal.price
+        && Float.compare(houseDeal.exclusivePrivateArea, exclusivePrivateArea) == 0
+        && Objects.equals(dealDate, houseDeal.dealDate) && Objects.equals(type, houseDeal.type)
+        && Objects.equals(house.getId(), houseDeal.house.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, floor, price, exclusivePrivateArea, dealYear, dealMonth, dealDay,
-        houseInfo.getId());
+    return Objects.hash(type, floor, price, exclusivePrivateArea, dealDate, house.getId());
   }
 }

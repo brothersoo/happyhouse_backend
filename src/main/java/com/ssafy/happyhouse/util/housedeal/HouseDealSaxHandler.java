@@ -1,14 +1,15 @@
 package com.ssafy.happyhouse.util.housedeal;
 
 import com.ssafy.happyhouse.domain.area.Upmyundong;
-import com.ssafy.happyhouse.domain.housedeal.DealInfo;
-import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import com.ssafy.happyhouse.domain.housedeal.House;
+import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class HouseDealSaxHandler extends DefaultHandler {
-	private List<DealInfo> dealInfos;
+	private List<HouseDeal> houseDeals;
 	private int price;
 	private String type;
 	private int buildYear;
@@ -23,18 +24,9 @@ public class HouseDealSaxHandler extends DefaultHandler {
 	private Long umdId;
 
 	public HouseDealSaxHandler(Long umdId) {
-		dealInfos = new ArrayList<>();
+		houseDeals = new ArrayList<>();
 		this.umdId = umdId;
 	}
-
-//	public void startElement(String uri, String localName, String name, Attributes att) {
-//		if (name.equals("item")) {
-//			Upmyundong umd = Upmyundong.builder().build();
-//			HouseInfo houseInfo = HouseInfo.builder().upmyundong(umd).build();
-//			DealInfo dealInfo = DealInfo.builder().houseInfo(houseInfo).build();
-//			dealInfos.add(dealInfo);
-//		}
-//	}
 
 	public void endElement(String uri, String localName, String name) {
 		if (name.equals("거래금액")) {
@@ -53,20 +45,20 @@ public class HouseDealSaxHandler extends DefaultHandler {
 		} else if (name.equals("일")) {
 			this.dealDay = Integer.parseInt(str);
 		} else if (name.equals("전용면적")) {
-			this.exclusivePrivateArea = Float.parseFloat(str);
+			this.exclusivePrivateArea = (float)(Math.round(Float.parseFloat(str)*1000)/1000.0);
 		} else if (name.equals("지번")) {
 			this.jibun = str;
 		} else if (name.equals("층")) {
 			this.floor = Integer.parseInt(str);
 		} else if (name.equals("item")) {
 			Upmyundong umd = Upmyundong.builder().id(umdId).build();
-			HouseInfo houseInfo = HouseInfo.builder().aptName(aptName)
+			House house = House.builder().aptName(aptName)
 					.jibun(jibun).buildYear(buildYear).upmyundong(umd).build();
-			DealInfo dealInfo = DealInfo.builder()
-					.dealYear(dealYear).dealMonth(dealMonth).dealDay(dealDay)
+			HouseDeal houseDeal = HouseDeal.builder()
+					.dealDate(LocalDate.of(dealYear, dealMonth, dealDay))
 					.type(type).exclusivePrivateArea(exclusivePrivateArea)
-					.price(price).floor(floor).houseInfo(houseInfo).build();
-			dealInfos.add(dealInfo);
+					.price(price).floor(floor).house(house).build();
+			houseDeals.add(houseDeal);
 		}
 	}
 
@@ -75,11 +67,11 @@ public class HouseDealSaxHandler extends DefaultHandler {
 		str = new String(ch, start, length);
 	}
 
-	public List<DealInfo> getDealInfos() {
-		return dealInfos;
+	public List<HouseDeal> getDealInfos() {
+		return houseDeals;
 	}
 
-	public void setDealInfos(List<DealInfo> dealInfos) {
-		this.dealInfos = dealInfos;
+	public void setDealInfos(List<HouseDeal> houseDeals) {
+		this.houseDeals = houseDeals;
 	}
 }

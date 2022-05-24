@@ -10,7 +10,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -37,15 +36,11 @@ public class Sigugun {
   @JoinColumn(name = "sido_id")
   private Sido sido;
 
-//  @OneToMany(mappedBy = "sigugun")
-//  private List<Upmyundong> upmyundongs;
-
   @Builder
-  public Sigugun(Long id, String code, String name, Sido sido, List<Upmyundong> upmyundongs) {
+  public Sigugun(Long id, String code, String name, Sido sido) {
     this.id = id;
     this.code = code;
     this.name = name;
     this.sido = sido;
-//    this.upmyundongs = upmyundongs;
   }
 }

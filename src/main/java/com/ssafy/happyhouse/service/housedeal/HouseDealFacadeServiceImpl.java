@@ -1,14 +1,18 @@
 package com.ssafy.happyhouse.service.housedeal;
 
-import com.ssafy.happyhouse.domain.housedeal.DealInfo;
-import com.ssafy.happyhouse.domain.housedeal.HouseInfo;
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
+
+import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.House;
+import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
-import com.ssafy.happyhouse.repository.housedeal.DealInfoRepository;
-import com.ssafy.happyhouse.repository.housedeal.HouseInfoRepository;
+import com.ssafy.happyhouse.repository.housedeal.HouseHouseDealRepository;
+import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,89 +30,94 @@ import org.xml.sax.SAXException;
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   private HouseDealAPIHandler houseDealAPIHandler = HouseDealAPIHandler.getInstance();
-  private final DealInfoRepository dealInfoRepository;
-  private final HouseInfoRepository houseInfoRepository;
+  private final HouseHouseDealRepository houseDealRepository;
+  private final HouseRepository houseRepository;
 
   @Override
-  public List<DealInfo> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
-    List<DealInfo> dealList = dealInfoRepository.findByCodeYearMonthWithHouseInfo(
-        code, dealYear, dealMonth);
-
-//    if (order.equals("aptName")) {
-//      Collections.sort(dealList, (deal1, deal2) -> {
-//        return deal1.getHouseInfo().getAptName().compareTo(deal2.getHouseInfo().getAptName());
-//      });
-//    } else if (order.equals("dealDate")) {
-//      Collections.sort(dealList, (deal1, deal2) -> {
-//        return deal1.getDealDay() - deal2.getDealDay();
-//      });
-//    } else if (order.equals("-dealDate")) {
-//      Collections.sort(dealList, (deal1, deal2) -> {
-//        return deal2.getDealDay() - deal1.getDealDay();
-//      });
-//    }
-    return dealList;
+  public List<HouseDeal> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
+    return houseDealRepository.findByCodeAndYearMonthOfDate(
+        code, LocalDate.of(dealYear, dealMonth, 1));
   }
 
   @Override
   @Transactional
-  public int[] updateDeal(String code, int year, int month, Long upmyundongId)
+  public int[] updateDeal(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException {
-    List<DealInfo> dealInfosFromOpenAPI
-        = houseDealAPIHandler.getMonthlyAreaDealInfo(code, year, month, upmyundongId);
+    List<HouseDeal> houseDealInfosFromOpenAPI = new ArrayList<>();
 
-    List<HouseInfo> persistedHouseInfos
-        = houseInfoRepository.findByUpmyundongId(upmyundongId);
-    Map<HouseInfo, HouseInfo> persistedHouseInfosMap = new HashMap<>();
-    for (HouseInfo houseInfo : persistedHouseInfos) {
-      persistedHouseInfosMap.put(houseInfo, houseInfo);
+    // get persisted houses
+    List<House> persistedHouses
+        = houseRepository.findByUpmyundongId(dealUpdateDto.getUmdId());
+    Map<House, House> persistedHousesMap = new HashMap<>();
+    for (House house : persistedHouses) {
+      persistedHousesMap.put(house, house);
     }
 
-    Set<DealInfo> persistedDealInfos
-        = new HashSet<>(dealInfoRepository.findByCodeYearMonthWithHouseInfo(code, year, month));
+    // get persisted house deals
+    LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(),
+        dealUpdateDto.getToMonth(), 1).with(lastDayOfMonth());
+    Set<HouseDeal> persistedHouseDeals = new HashSet<>(
+        houseDealRepository.findByCodeAndDateBetween(
+            dealUpdateDto.getCode(), fromDate, toDate));
 
-    List<DealInfo> newDealInfos = new ArrayList<>();
-    Map<HouseInfo, HouseInfo> newHouseInfos = new HashMap<>();
+    // api call in date range (monthly)
+    for (int year = dealUpdateDto.getFromYear(); year <= dealUpdateDto.getToYear(); year++) {
+      int fromMonth = (year == dealUpdateDto.getFromYear()) ? dealUpdateDto.getFromMonth() : 1;
+      int toMonth = (year == dealUpdateDto.getToYear()) ? dealUpdateDto.getToMonth() : 12;
+      for (int month = fromMonth; month <= toMonth; month++) {
+        houseDealInfosFromOpenAPI.addAll(
+            houseDealAPIHandler.getMonthlyAreaDealInfo(dealUpdateDto.getCode(), year, month,
+                dealUpdateDto.getUmdId()));
+      }
+    }
 
-    for (DealInfo dealInfo : dealInfosFromOpenAPI) {
-      if (!persistedHouseInfosMap.containsKey(dealInfo.getHouseInfo())) {
-        newHouseInfos.putIfAbsent(dealInfo.getHouseInfo(), dealInfo.getHouseInfo());
-        if (newHouseInfos.containsKey(dealInfo.getHouseInfo())) {
-          dealInfo.setPersistedHouseInfo(newHouseInfos.get(dealInfo.getHouseInfo()));
+    List<HouseDeal> newHouseDeals = new ArrayList<>();
+    Map<House, House> newHouses = new HashMap<>();
+
+    for (HouseDeal houseDeal : houseDealInfosFromOpenAPI) {
+      if (!persistedHousesMap.containsKey(houseDeal.getHouse())) {
+        newHouses.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
+        if (newHouses.containsKey(houseDeal.getHouse())) {
+          houseDeal.setPersistedHouse(newHouses.get(houseDeal.getHouse()));
         }
       } else {
-        dealInfo.setPersistedHouseInfo(persistedHouseInfosMap.get(dealInfo.getHouseInfo()));
+        houseDeal.setPersistedHouse(persistedHousesMap.get(houseDeal.getHouse()));
       }
 
-      if (!persistedDealInfos.contains(dealInfo)) {
-        newDealInfos.add(dealInfo);
+      if (!persistedHouseDeals.contains(houseDeal)) {
+        newHouseDeals.add(houseDeal);
       }
     }
 
-    houseInfoRepository.saveAll(newHouseInfos.keySet());
-    dealInfoRepository.saveAll(newDealInfos);
+    houseRepository.saveAll(newHouses.keySet());
+    houseDealRepository.saveAll(newHouseDeals);
 
-    return new int[]{newHouseInfos.size(), newDealInfos.size()};
+    return new int[]{newHouses.size(), newHouseDeals.size()};
   }
 
   @Override
   public AverageDealsInRange getDealsByCodeAndDateRange(String code,
       Long houseId, DateRange dateRange) {
+    LocalDate fromDate = LocalDate.of(dateRange.getFromYear(),
+        dateRange.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dateRange.getToYear(),
+        dateRange.getToMonth(), 1).with(lastDayOfMonth());
     List<AveragePricePerUnit> houseAveragePrice =
-        dealInfoRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
-            dateRange.getFromYear(), dateRange.getToYear(),
-            dateRange.getFromMonth(), dateRange.getToMonth(), dateRange.getType());
+        houseDealRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
+            fromDate, toDate, dateRange.getType());
     return new AverageDealsInRange(dateRange, houseAveragePrice);
   }
 
-	@Override
-	public List<HouseInfo> getAptInDong(Long upmyundongId) {
-		return houseInfoRepository.findByUpmyundongId(upmyundongId);
-	}
+  @Override
+  public List<HouseDeal> getDealOfApt(Long hosueId) {
+	  List<HouseDeal> dealList = houseDealRepository.findByHouseId(hosueId);
+	  return dealList;
+  }
 
-	@Override
-	public List<DealInfo> getDealOfApt(Long hosueId) {
-		List<DealInfo> dealList = dealInfoRepository.findByHouseId(hosueId);
-		return dealList;
-	}
+  @Override
+  public List<House> getHousesInArea(String code) {
+    return houseRepository.findByCodeStartingWith(code);
+  }
+
 }
