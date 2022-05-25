@@ -7,7 +7,6 @@ import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 
 import com.ssafy.happyhouse.dto.response.DateRange;
-import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
 
