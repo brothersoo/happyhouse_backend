@@ -11,5 +11,5 @@ import org.springframework.data.repository.query.Param;
 public interface HouseDealRepository
     extends JpaRepository<HouseDeal, Long>, HouseDealRepositoryCustom { 
 	
-	  List<HouseDeal> findByIdOrderByDealDateDesc(@Param("houseId") Long houseId);
+	  List<HouseDeal> findByHouseIdOrderByDealDateDesc(@Param("houseId") Long houseId);
 }

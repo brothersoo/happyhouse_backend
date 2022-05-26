@@ -1,5 +1,6 @@
 package com.ssafy.happyhouse.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -50,13 +52,25 @@ public class UserController {
 		return json.toString();
 	}
 
+//	@ApiOperation(value = "회원등록을 처리합니다.", response=UserDto.class)
+//	@PostMapping("/register")	// 회원가입 요청
+//	public String register(UserDto userDto, Model model) throws Exception {
+//
+//		logger.debug("userDto info : {}", userDto);
+//		userService.registerUser(userDto);
+//		return "redirect:/user/login";
+//	}
+	
 	@ApiOperation(value = "회원등록을 처리합니다.", response=UserDto.class)
-	@PostMapping("/register")	// 회원가입 요청
-	public String register(UserDto userDto, Model model) throws Exception {
-
-		logger.debug("userDto info : {}", userDto);
-		userService.registerUser(userDto);
-		return "redirect:/user/login";
+	@PostMapping(value = "/register")
+	public ResponseEntity<?> register(@RequestBody UserDto userDto) {
+		try {
+			userService.registerUser(userDto);
+			List<UserDto> list = userService.listUser();
+			return new ResponseEntity<List<UserDto>>(list, HttpStatus.OK);
+		} catch (Exception e) {
+			return exceptionHandling(e);
+		}
 	}
 
 	@GetMapping("/update")

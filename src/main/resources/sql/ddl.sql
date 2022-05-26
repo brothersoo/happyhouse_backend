@@ -17,11 +17,11 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 CREATE SCHEMA IF NOT EXISTS `happyhouse` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ;
 USE `happyhouse` ;
 
-DROP TABLE `sido` IF EXISTS;
-DROP TABLE `sigugun` IF EXISTS;
-DROP TABLE `upmyundong` IF EXISTS;
-DROP TABLE `house` IF EXISTS;
-DROP TABLE `house_deal` IF EXISTS;
+DROP TABLE IF EXISTS `sido`;
+DROP TABLE IF EXISTS `sigugun`;
+DROP TABLE IF EXISTS `upmyundong`;
+DROP TABLE IF EXISTS `house`;
+DROP TABLE IF EXISTS `house_deal`;
 
 
 -- -----------------------------------------------------
@@ -130,8 +130,8 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 ----------------------------------------
 
-
-LOAD DATA INFILE "/Users/brothersoo/dev/algorithm/java_algorithm/java/src/happyHouse/area/data/sido.txt"
+select * from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where CONSTRAINT_TYPE = 'FOREIGN KEY';
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/sido.txt"
 INTO TABLE sido CHARACTER SET utf8
 FIELDS TERMINATED BY '\t'
 LINES TERMINATED BY '\n';
@@ -139,7 +139,7 @@ LINES TERMINATED BY '\n';
 
 ----------------------------------------
 
-LOAD DATA INFILE "/Users/brothersoo/dev/algorithm/java_algorithm/java/src/happyHouse/area/data/sigugun.txt"
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/sigugun.txt"
 INTO TABLE sigugun CHARACTER SET utf8
 FIELDS TERMINATED BY '\t'
 LINES TERMINATED BY '\n';
@@ -147,7 +147,15 @@ LINES TERMINATED BY '\n';
 
 -----------------------------------
 
-LOAD DATA INFILE "/Users/brothersoo/dev/algorithm/java_algorithm/java/src/happyHouse/area/data/upmyundong.txt"
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/upmyundong.txt"
 INTO TABLE upmyundong CHARACTER SET utf8
 FIELDS TERMINATED BY '\t'
 LINES TERMINATED BY '\n';
+
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/House_11110_200001_202204.csv"
+INTO TABLE upmyundong CHARACTER SET utf8
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n';
+
+-- 외래키 삭제
+alter table house_info drop foreign key fk_house_info_upmyundong1;

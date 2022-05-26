@@ -110,8 +110,8 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   }
 
   @Override
-  public List<HouseDeal> getDealOfApt(Long hosueId) {
-	  List<HouseDeal> dealList = houseDealRepository.findByIdOrderByDealDateDesc(hosueId);
+  public List<HouseDeal> getDealOfApt(Long houseId) {
+	  List<HouseDeal> dealList = houseDealRepository.findByHouseIdOrderByDealDateDesc(houseId);
 	  return dealList;
   }
 
