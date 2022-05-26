@@ -13,4 +13,6 @@ public interface HouseDealRepositoryCustom {
 
   List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type);
+
+//  int
 }

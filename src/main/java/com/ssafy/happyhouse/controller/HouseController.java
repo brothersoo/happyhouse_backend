@@ -81,13 +81,14 @@ public class HouseController {
   }
   
   @GetMapping("/apt/deal")
+  @ApiOperation(value="", response= Sido.class)
   public ResponseEntity<?> aptDeal(@RequestParam Long houseId) {
-	  try {
-		  List<HouseDeal> deals = houseService.getDealOfApt(houseId);
-		  return new ResponseEntity<>(deals, HttpStatus.OK);
-	  } catch (Exception e) {
-	      return exceptionHandling(e);
-	  }
+    try {
+      List<HouseDeal> deals = houseService.getDealOfApt(houseId);
+      return new ResponseEntity<>(deals, HttpStatus.OK);
+    } catch (Exception e) {
+      return exceptionHandling(e);
+    }
   }
 
   private ResponseEntity<String> exceptionHandling(Exception e) {
