@@ -1,5 +1,7 @@
 package com.ssafy.happyhouse.controller;
 
+import com.ssafy.happyhouse.dto.request.user.RegisterDto;
+import com.ssafy.happyhouse.dto.request.user.UpdateDto;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -50,9 +52,9 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdminController
 	
 	@ApiOperation(value = "회원등록", notes = "회원의 정보를 받아 처리.")
 	@PostMapping(value = "/user")
-	public ResponseEntity<?> userRegister(@RequestBody UserDto userDto) {
+	public ResponseEntity<?> userRegister(@RequestBody RegisterDto registerDto) {
 		try {
-			userService.registerUser(userDto);
+			userService.registerUser(registerDto);
 			List<UserDto> list = userService.listUser();
 			return new ResponseEntity<List<UserDto>>(list, HttpStatus.OK);
 		} catch (Exception e) {
@@ -78,9 +80,9 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdminController
 	
 	@ApiOperation(value = "회원정보수정", notes = "회원정보를 수정합니다.")
 	@PutMapping(value = "/user")
-	public ResponseEntity<?> userModify(@RequestBody UserDto userDto) {
+	public ResponseEntity<?> userModify(@RequestBody UpdateDto updateDto) {
 		try {
-			userService.updateUser(userDto);
+			userService.updateUser(updateDto);
 			List<UserDto> list = userService.listUser();
 			return new ResponseEntity<List<UserDto>>(list, HttpStatus.OK);
 		} catch (Exception e) {

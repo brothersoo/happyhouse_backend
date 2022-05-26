@@ -10,12 +10,13 @@
 		where userid = #{userid}
 	</select>
 
-	<insert id="registerUser" parameterType="UserDto">
+	<insert id="registerUser" parameterType="com.ssafy.happyhouse.dto.request.user.RegisterDto">
 		insert into userinfo (userid, userpwd, username, useraddr, usertel, joindate)
 		values (#{userId}, #{userPwd}, #{userName}, #{userAddr}, #{userTel}, now())
 	</insert>
 
-	<select id="login" parameterType="map" resultType="UserDto">
+	<select id="login" parameterType="com.ssafy.happyhouse.dto.request.user.LoginDto"
+		resultType="com.ssafy.happyhouse.dto.response.user.UserTokenDto">
 		select userid, username
 		from userinfo
 		where userid = #{userId} and userpwd = #{userPwd}

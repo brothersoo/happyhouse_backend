@@ -11,6 +11,8 @@ public interface HouseDealRepositoryCustom {
 
   List<HouseDeal> findByCodeAndDateBetween(String code, LocalDate fromDate, LocalDate toDate);
 
-  List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(String code, long houseId,
+  List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type);
+
+//  int
 }

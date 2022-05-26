@@ -1,5 +1,9 @@
 package com.ssafy.happyhouse.service;
 
+import com.ssafy.happyhouse.dto.request.user.LoginDto;
+import com.ssafy.happyhouse.dto.request.user.RegisterDto;
+import com.ssafy.happyhouse.dto.request.user.UpdateDto;
+import com.ssafy.happyhouse.dto.response.user.UserTokenDto;
 import java.util.List;
 import java.util.Map;
 
@@ -21,13 +25,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void registerUser(UserDto userDto) throws Exception {
-		userMapper.registerUser(userDto);
+	public void registerUser(RegisterDto registerDto) throws Exception {
+		userMapper.registerUser(registerDto);
 	}
 
 	@Override
-	public UserDto login(Map<String, String> map) throws Exception {
-		return userMapper.login(map);
+	public UserTokenDto login(LoginDto loginDto) throws Exception {
+		return userMapper.login(loginDto);
 	}
 
 	@Override
@@ -41,14 +45,12 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void updateUser(UserDto userDto) throws Exception {
-		userMapper.updateUser(userDto);
+	public void updateUser(UpdateDto updateDto) throws Exception {
+		userMapper.updateUser(updateDto);
 	}
 
 	@Override
 	public void deleteUser(String userId) throws Exception {
 		userMapper.deleteUser(userId);
 	}
-
-	
 }
