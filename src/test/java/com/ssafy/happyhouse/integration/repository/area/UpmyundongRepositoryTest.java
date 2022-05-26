@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.repository.area;
+package com.ssafy.happyhouse.integration.repository.area;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,6 +6,7 @@ import com.ssafy.happyhouse.config.QueryDslConfig;
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
+import com.ssafy.happyhouse.repository.area.UpmyundongRepository;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

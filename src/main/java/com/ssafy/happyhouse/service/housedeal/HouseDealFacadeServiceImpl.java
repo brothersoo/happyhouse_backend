@@ -5,9 +5,10 @@ import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
-import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
+import com.ssafy.happyhouse.dto.response.graph.ChartData;
+import com.ssafy.happyhouse.dto.response.graph.Dataset;
 import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
 import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
@@ -96,28 +97,75 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     return new int[]{newHouses.size(), newHouseDeals.size()};
   }
 
-  @Override
-  public AverageDealsInRange getDealsByCodeAndDateRange(String code,
-      Long houseId, DateRange dateRange) {
-    LocalDate fromDate = LocalDate.of(dateRange.getFromYear(),
-        dateRange.getFromMonth(), 1);
-    LocalDate toDate = LocalDate.of(dateRange.getToYear(),
-        dateRange.getToMonth(), 1).with(lastDayOfMonth());
-    List<AveragePricePerUnit> houseAveragePrice =
-        houseDealRepository.findHouseAveragePriceByCodeAndDateRange(code, houseId,
-            fromDate, toDate, dateRange.getType());
-    return new AverageDealsInRange(dateRange, houseAveragePrice);
+  Double getNearestData(Map<String, Double> dateAvgPriceMap, int startIndex, List<String> dates) {
+    int gap = 0;
+    while (true) {
+      if (startIndex - gap >= 0 && dateAvgPriceMap.containsKey(dates.get(startIndex - gap))) {
+        return dateAvgPriceMap.get(dates.get(startIndex - gap));
+      } else if (startIndex + gap < dates.size() && dateAvgPriceMap.containsKey(dates.get(startIndex + gap))) {
+        return dateAvgPriceMap.get(dates.get(startIndex + gap));
+      } else {
+        gap++;
+      }
+    }
+  }
+
+  Dataset generateDataset(Map<String, Map<String, Double>> houseDateAvgPriceMap,
+      String houseName, List<String> dates) {
+    Dataset dataset = Dataset.builder().label(houseName).data(new ArrayList<>()).build();
+    for (int i = 0; i < dates.size(); i++) {
+      Double nearestData = getNearestData(houseDateAvgPriceMap.get(houseName), i, dates);
+      dataset.getData().add(nearestData);
+    }
+    return dataset;
+  }
+
+  ChartData generateChartData(List<AveragePricePerUnit> averagePricesPerUnit) {
+    ChartData chartData = new ChartData();
+    Map<String, Map<String, Double>> houseDateAvgPriceMap = new HashMap<>();
+    Set<String> chartDataLabels = new HashSet<>();
+
+    for (AveragePricePerUnit averagePrice : averagePricesPerUnit) {
+      houseDateAvgPriceMap.putIfAbsent(averagePrice.getName(), new HashMap<>());
+      houseDateAvgPriceMap.get(averagePrice.getName()).putIfAbsent(averagePrice.getDate(), averagePrice.getAvgPrice());
+      chartDataLabels.add(averagePrice.getDate());
+    }
+
+    chartData.setLabels(new ArrayList<>(chartDataLabels));
+    chartData.getLabels().sort(null);
+    chartData.setDatasets(new ArrayList<>());
+
+    for (String houseName : houseDateAvgPriceMap.keySet()) {
+      chartData.getDatasets().add(
+          generateDataset(houseDateAvgPriceMap, houseName, chartData.getLabels())
+      );
+    }
+
+    return chartData;
   }
 
   @Override
-  public List<HouseDeal> getDealOfApt(Long houseId) {
-	  List<HouseDeal> dealList = houseDealRepository.findByHouseIdOrderByDealDateDesc(houseId);
-	  return dealList;
+  public ChartData getChartDataOfHouses(List<Long> houseIds, DateRange dateRange) {
+    LocalDate fromDate = LocalDate.of(dateRange.getFromYear(),
+        dateRange.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dateRange.getToYear(), dateRange.getToMonth(), 1)
+        .with(lastDayOfMonth());
+
+    List<AveragePricePerUnit> averagePricesPerUnit
+        = houseDealRepository.findHouseAveragePriceByCodeAndDateRange(houseIds,
+        fromDate, toDate, dateRange.getType());
+
+    return generateChartData(averagePricesPerUnit);
+  }
+
+  @Override
+  public List<HouseDeal> getDealOfApt(Long hosueId) {
+    List<HouseDeal> dealList = houseDealRepository.findByHouseIdOrderByDealDateDesc(hosueId);
+    return dealList;
   }
 
   @Override
   public List<House> getHousesInArea(String code) {
     return houseRepository.findByCodeStartingWith(code);
   }
-
 }

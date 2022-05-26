@@ -5,7 +5,7 @@ import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 
 import com.ssafy.happyhouse.dto.response.DateRange;
-import com.ssafy.happyhouse.dto.response.AverageDealsInRange;
+import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import java.io.IOException;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,9 +18,8 @@ public interface HouseDealFacadeService {
   int[] updateDeal(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException;
 
-  AverageDealsInRange getDealsByCodeAndDateRange(String code,
-      Long houseId, DateRange dateRange);
-  
+  ChartData getChartDataOfHouses(List<Long> houseIds, DateRange dateRange);
+
   List<HouseDeal> getDealOfApt(Long hosueId);
 
   List<House> getHousesInArea(String code);
