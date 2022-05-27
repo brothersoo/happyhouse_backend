@@ -11,7 +11,10 @@ import com.ssafy.happyhouse.model.UserDto;
 
 public interface UserService {
 
-	UserTokenDto login(LoginDto loginDto) throws Exception;
+//	UserTokenDto login(LoginDto loginDto) throws Exception;
+	UserDto login(UserDto userDto) throws Exception;
+	UserDto userInfo(String userId) throws Exception;
+
 
 	int idCheck(String userId) throws Exception;
 	void registerUser(RegisterDto registerDto) throws Exception;		// 회원등록

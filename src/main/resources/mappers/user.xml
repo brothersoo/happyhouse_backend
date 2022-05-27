@@ -14,12 +14,18 @@
 		insert into userinfo (userid, userpwd, username, useraddr, usertel, joindate)
 		values (#{userId}, #{userPwd}, #{userName}, #{userAddr}, #{userTel}, now())
 	</insert>
-
-	<select id="login" parameterType="com.ssafy.happyhouse.dto.request.user.LoginDto"
-		resultType="com.ssafy.happyhouse.dto.response.user.UserTokenDto">
-		select userid, username
+	
+	<select id="login" parameterType="UserDto"
+		resultType="UserDto">
+		select userid, username, useraddr, usertel
 		from userinfo
 		where userid = #{userId} and userpwd = #{userPwd}
+	</select>
+	
+	<select id="userInfo" parameterType="String" resultType="UserDto">
+		select username, userid, useraddr, usertel, joindate
+		from userinfo
+		where userid = #{userid}
 	</select>
 	
 	<select id="listUser" resultType="UserDto">

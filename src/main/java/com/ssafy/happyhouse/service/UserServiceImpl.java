@@ -29,10 +29,23 @@ public class UserServiceImpl implements UserService {
 		userMapper.registerUser(registerDto);
 	}
 
+//	@Override
+//	public UserTokenDto login(LoginDto loginDto) throws Exception {
+//		return userMapper.login(loginDto);
+//	}
+	
 	@Override
-	public UserTokenDto login(LoginDto loginDto) throws Exception {
-		return userMapper.login(loginDto);
+	public UserDto login(UserDto userDto) throws Exception {
+		if(userDto.getUserId() == null || userDto.getUserPwd() == null)
+			return null;
+		return userMapper.login(userDto);
+	};
+	
+	@Override
+	public UserDto userInfo(String userid) throws Exception {
+		return userMapper.userInfo(userid);
 	}
+
 
 	@Override
 	public List<UserDto> listUser() throws Exception {
