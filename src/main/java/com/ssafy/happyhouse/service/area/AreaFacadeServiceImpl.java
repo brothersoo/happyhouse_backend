@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class AreaFacadeServiceImpl {
+public class AreaFacadeServiceImpl implements AreaFacadeService {
 
   private final SidoRepository sidoRepository;
   private final SigugunRepository sigugunRepository;
@@ -28,5 +28,9 @@ public class AreaFacadeServiceImpl {
 
   public List<Upmyundong> searchUpmyundongsInSigugun(String sigugunCode) {
     return upmyundongRepository.findByCodeStartingWith(sigugunCode);
+  }
+
+  public Upmyundong searchUpmyundongByName(String name) {
+    return upmyundongRepository.findFirstByName(name);
   }
 }

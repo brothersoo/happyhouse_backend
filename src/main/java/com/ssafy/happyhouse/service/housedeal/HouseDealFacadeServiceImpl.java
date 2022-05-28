@@ -2,6 +2,7 @@ package com.ssafy.happyhouse.service.housedeal;
 
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 
+import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
@@ -11,6 +12,7 @@ import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.dto.response.graph.Dataset;
 import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
 import com.ssafy.happyhouse.repository.house.HouseRepository;
+import com.ssafy.happyhouse.service.area.AreaFacadeService;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -30,9 +32,10 @@ import org.xml.sax.SAXException;
 @Service
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
-  private HouseDealAPIHandler houseDealAPIHandler = HouseDealAPIHandler.getInstance();
+  private final HouseDealAPIHandler houseDealAPIHandler;
   private final HouseDealRepository houseDealRepository;
   private final HouseRepository houseRepository;
+  private final AreaFacadeService areaFacadeService;
 
   @Override
   public List<HouseDeal> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
@@ -44,11 +47,11 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
   @Transactional
   public int[] updateDeal(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException {
-    List<HouseDeal> houseDealInfosFromOpenAPI = new ArrayList<>();
+    List<HouseDeal> houseDealsFromOpenAPI = new ArrayList<>();
 
     // get persisted houses
     List<House> persistedHouses
-        = houseRepository.findByUpmyundongId(dealUpdateDto.getUmdId());
+        = houseRepository.findByCodeStartingWith(dealUpdateDto.getCode());
     Map<House, House> persistedHousesMap = new HashMap<>();
     for (House house : persistedHouses) {
       persistedHousesMap.put(house, house);
@@ -67,16 +70,21 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       int fromMonth = (year == dealUpdateDto.getFromYear()) ? dealUpdateDto.getFromMonth() : 1;
       int toMonth = (year == dealUpdateDto.getToYear()) ? dealUpdateDto.getToMonth() : 12;
       for (int month = fromMonth; month <= toMonth; month++) {
-        houseDealInfosFromOpenAPI.addAll(
-            houseDealAPIHandler.getMonthlyAreaDealInfo(dealUpdateDto.getCode(), year, month,
-                dealUpdateDto.getUmdId()));
+        List<HouseDeal> dealsFromAPI = houseDealAPIHandler.getMonthlyAreaDealInfo(dealUpdateDto.getCode(), year, month);
+        houseDealsFromOpenAPI.addAll(dealsFromAPI);
       }
+    }
+
+    // set upmyundong of house deals from external api
+    for (HouseDeal houseDeal : houseDealsFromOpenAPI) {
+      Upmyundong umd = areaFacadeService.searchUpmyundongByName(houseDeal.getHouse().getUpmyundong().getName());
+      houseDeal.getHouse().setPersistedUpmyundong(umd);
     }
 
     List<HouseDeal> newHouseDeals = new ArrayList<>();
     Map<House, House> newHousesMap = new HashMap<>();
 
-    for (HouseDeal houseDeal : houseDealInfosFromOpenAPI) {
+    for (HouseDeal houseDeal : houseDealsFromOpenAPI) {
       if (!persistedHousesMap.containsKey(houseDeal.getHouse())) {
         newHousesMap.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
         if (newHousesMap.containsKey(houseDeal.getHouse())) {
@@ -93,10 +101,10 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
     List<House> newHouses = new ArrayList<>(newHousesMap.keySet());
 
-    houseRepository.saveAll(newHouses);
-    houseDealRepository.saveAll(newHouseDeals);
+    int insertedHousesNum = houseRepository.batchInsert(newHouses);
+    int insertedHouseDealsNum = houseDealRepository.batchInsert(newHouseDeals);
 
-    return new int[]{newHouses.size(), newHouseDeals.size()};
+    return new int[]{insertedHousesNum, insertedHouseDealsNum};
   }
 
   Double getNearestData(Map<String, Double> dateAvgPriceMap, int startIndex, List<String> dates) {

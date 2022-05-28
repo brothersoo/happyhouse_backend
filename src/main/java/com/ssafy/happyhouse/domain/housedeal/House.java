@@ -66,4 +66,8 @@ public class House {
   public int hashCode() {
     return Objects.hash(aptName, upmyundong.getId());
   }
+
+  public void setPersistedUpmyundong(Upmyundong upmyundong) {
+    this.upmyundong = upmyundong;
+  }
 }

@@ -20,40 +20,41 @@ public class HouseDealSaxHandler extends DefaultHandler {
 	private float exclusivePrivateArea;
 	private String jibun;
 	private int floor;
+	private String upmyundongName;
 	private String str;
-	private Long umdId;
 
-	public HouseDealSaxHandler(Long umdId) {
+	public HouseDealSaxHandler() {
 		houseDeals = new ArrayList<>();
-		this.umdId = umdId;
 	}
 
 	public void endElement(String uri, String localName, String name) {
 		if (name.equals("거래금액")) {
 			str = str.trim().replace(",", "");
-			this.price = Integer.parseInt(str);
+			price = Integer.parseInt(str);
 		} else if (name.equals("거래유형")) {
-			this.type = str;
+			type = str;
 		} else if (name.equals("건축년도")) {
-			this.buildYear = Integer.parseInt(str);
+			buildYear = Integer.parseInt(str);
 		} else if (name.equals("년")) {
-			this.dealYear = Integer.parseInt(str);
+			dealYear = Integer.parseInt(str);
 		} else if (name.equals("아파트")) {
-			this.aptName = str;
+			aptName = str;
 		} else if (name.equals("월")) {
-			this.dealMonth = Integer.parseInt(str);
+			dealMonth = Integer.parseInt(str);
 		} else if (name.equals("일")) {
-			this.dealDay = Integer.parseInt(str);
+			dealDay = Integer.parseInt(str);
 		} else if (name.equals("전용면적")) {
-			this.exclusivePrivateArea = (float)(Math.round(Float.parseFloat(str)*1000)/1000.0);
+			exclusivePrivateArea = (float)(Math.round(Float.parseFloat(str)*1000)/1000.0);
 		} else if (name.equals("지번")) {
-			this.jibun = str;
+			jibun = str;
 		} else if (name.equals("층")) {
-			this.floor = Integer.parseInt(str);
+			floor = Integer.parseInt(str);
+		} else if (name.equals("법정동")) {
+			upmyundongName = str;
 		} else if (name.equals("item")) {
-			Upmyundong umd = Upmyundong.builder().id(umdId).build();
-			House house = House.builder().aptName(aptName)
-					.jibun(jibun).buildYear(buildYear).upmyundong(umd).build();
+			Upmyundong upmyundong = Upmyundong.builder().name(upmyundongName).build();
+			House house = House.builder().aptName(aptName).jibun(jibun)
+					.buildYear(buildYear).upmyundong(upmyundong).build();
 			HouseDeal houseDeal = HouseDeal.builder()
 					.dealDate(LocalDate.of(dealYear, dealMonth, dealDay))
 					.type(type).exclusivePrivateArea(exclusivePrivateArea)
@@ -69,9 +70,5 @@ public class HouseDealSaxHandler extends DefaultHandler {
 
 	public List<HouseDeal> getDealInfos() {
 		return houseDeals;
-	}
-
-	public void setDealInfos(List<HouseDeal> houseDeals) {
-		this.houseDeals = houseDeals;
 	}
 }

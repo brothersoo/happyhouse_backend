@@ -9,5 +9,4 @@ public class DealUpdateDto {
   private int fromMonth;
   private int toYear;
   private int toMonth;
-  private long umdId;
 }
