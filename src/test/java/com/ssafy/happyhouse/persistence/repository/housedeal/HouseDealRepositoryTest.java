@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.integration.repository.housedeal;
+package com.ssafy.happyhouse.persistence.repository.housedeal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -10,6 +10,7 @@ import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -84,5 +85,31 @@ class HouseDealRepositoryTest {
     for (HouseDeal houseDeal : res) {
       assertThat(houseDeal.getHouse().getAptName()).isEqualTo("aptName");
     }
+  }
+
+  @Test
+  void batchInsertTest() {
+    Upmyundong upmyundong = persistBaseArea();
+
+    House house = House.builder().buildYear(2000).jibun("1")
+        .aptName("apt").upmyundong(upmyundong).build();
+    entityManager.persist(house);
+
+    List<HouseDeal> houseDeals = new ArrayList<>();
+
+    for (int i = 0; i < 10; i++) {
+      HouseDeal houseDeal = HouseDeal.builder()
+          .dealDate(LocalDate.of(2000, 1, 1))
+          .exclusivePrivateArea(1).price(100).floor(1)
+          .type("A").house(house).build();
+      houseDeals.add(houseDeal);
+    }
+
+    int res = houseDealRepository.batchSave(houseDeals);
+
+    assertThat(res).isEqualTo(houseDeals.size());
+
+    List<HouseDeal> list = houseDealRepository.findByHouseIdOrderByDealDateDesc(house.getId());
+    assertThat(list.size()).isEqualTo(houseDeals.size());
   }
 }

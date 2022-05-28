@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.integration.repository.housedeal;
+package com.ssafy.happyhouse.persistence.repository.housedeal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,7 +7,8 @@ import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.House;
-import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
+import com.ssafy.happyhouse.repository.house.HouseRepository;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -58,5 +59,23 @@ public class HouseRepositoryTest {
     for (House house : res) {
       assertThat(house.getUpmyundong().getCode()).startsWith(upmyundong.getCode());
     }
+  }
+
+  @Test
+  void batchInsertTest() {
+    Upmyundong upmyundong = persistBaseArea();
+
+    List<House> houses = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      House house = House.builder().aptName("A").jibun("1").buildYear(2000).upmyundong(upmyundong)
+          .build();
+      houses.add(house);
+    }
+
+    int insertedCount = houseRepository.batchInsert(houses);
+    assertThat(insertedCount).isEqualTo(houses.size());
+
+    List<House> searched = houseRepository.findByUpmyundongId(upmyundong.getId());
+    assertThat(searched.size()).isEqualTo(houses.size());
   }
 }

@@ -13,16 +13,25 @@ import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
+
+  private final JdbcTemplate jdbcTemplate;
 
   @Override
   public List<HouseDeal> findByCodeAndYearMonthOfDate(String code, LocalDate date) {
@@ -72,5 +81,36 @@ public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
         .groupBy(house.aptName, formattedDate)
         .orderBy(formattedDate.asc())
         .fetch();
+  }
+
+  public int batchSave(List<HouseDeal> deals) {
+    if (deals.isEmpty()) {
+      return 0;
+    }
+
+    String sql = "INSERT INTO house_deal(type, floor, price, "
+        + "exclusive_private_area, deal_date, house_id) VALUES(?, ?, ?, ?, ?, ?)";
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    int[] res = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+      @Override
+      public void setValues(PreparedStatement ps, int i) throws SQLException {
+        HouseDeal deal = deals.get(i);
+        ps.setString(1, deal.getType());
+        ps.setInt(2, deal.getFloor());
+        ps.setInt(3, deal.getPrice());
+        ps.setFloat(4, deal.getExclusivePrivateArea());
+        ps.setString(5, deal.getDealDate().format(formatter));
+        ps.setLong(6, deal.getHouse().getId());
+      }
+
+      @Override
+      public int getBatchSize() {
+        return deals.size();
+      }
+    });
+
+    return res.length;
   }
 }
