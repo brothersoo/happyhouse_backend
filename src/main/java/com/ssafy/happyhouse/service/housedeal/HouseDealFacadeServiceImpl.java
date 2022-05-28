@@ -10,7 +10,7 @@ import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.dto.response.graph.Dataset;
 import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
-import com.ssafy.happyhouse.repository.housedeal.HouseRepository;
+import com.ssafy.happyhouse.repository.house.HouseRepository;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -74,13 +74,13 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     }
 
     List<HouseDeal> newHouseDeals = new ArrayList<>();
-    Map<House, House> newHouses = new HashMap<>();
+    Map<House, House> newHousesMap = new HashMap<>();
 
     for (HouseDeal houseDeal : houseDealInfosFromOpenAPI) {
       if (!persistedHousesMap.containsKey(houseDeal.getHouse())) {
-        newHouses.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
-        if (newHouses.containsKey(houseDeal.getHouse())) {
-          houseDeal.setPersistedHouse(newHouses.get(houseDeal.getHouse()));
+        newHousesMap.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
+        if (newHousesMap.containsKey(houseDeal.getHouse())) {
+          houseDeal.setPersistedHouse(newHousesMap.get(houseDeal.getHouse()));
         }
       } else {
         houseDeal.setPersistedHouse(persistedHousesMap.get(houseDeal.getHouse()));
@@ -91,7 +91,9 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       }
     }
 
-    houseRepository.saveAll(newHouses.keySet());
+    List<House> newHouses = new ArrayList<>(newHousesMap.keySet());
+
+    houseRepository.saveAll(newHouses);
     houseDealRepository.saveAll(newHouseDeals);
 
     return new int[]{newHouses.size(), newHouseDeals.size()};

@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.integration.repository.area;
+package com.ssafy.happyhouse.persistence.repository.area;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
