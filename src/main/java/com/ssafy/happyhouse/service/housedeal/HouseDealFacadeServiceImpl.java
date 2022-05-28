@@ -76,9 +76,15 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     }
 
     // set upmyundong of house deals from external api
+    Map<String, Upmyundong> upmyundongInAreaMap = new HashMap<>();
+    List<Upmyundong> upmyundongsInArea = areaFacadeService.searchUpmyundongsInSigugun(
+        dealUpdateDto.getCode());
+    for (Upmyundong umd : upmyundongsInArea) {
+      upmyundongInAreaMap.putIfAbsent(umd.getName(), umd);
+    }
     for (HouseDeal houseDeal : houseDealsFromOpenAPI) {
-      Upmyundong umd = areaFacadeService.searchUpmyundongByName(houseDeal.getHouse().getUpmyundong().getName());
-      houseDeal.getHouse().setPersistedUpmyundong(umd);
+      houseDeal.getHouse().setPersistedUpmyundong(
+          upmyundongInAreaMap.get(houseDeal.getHouse().getUpmyundong().getName()));
     }
 
     List<HouseDeal> newHouseDeals = new ArrayList<>();
@@ -99,12 +105,10 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
       }
     }
 
-    List<House> newHouses = new ArrayList<>(newHousesMap.keySet());
+    List<House> savedHouses = houseRepository.saveAll(newHousesMap.keySet());
+    List<HouseDeal> savedHouseDeals = houseDealRepository.saveAll(newHouseDeals);
 
-    int insertedHousesNum = houseRepository.batchInsert(newHouses);
-    int insertedHouseDealsNum = houseDealRepository.batchInsert(newHouseDeals);
-
-    return new int[]{insertedHousesNum, insertedHouseDealsNum};
+    return new int[]{savedHouses.size(), savedHouseDeals.size()};
   }
 
   Double getNearestData(Map<String, Double> dateAvgPriceMap, int startIndex, List<String> dates) {

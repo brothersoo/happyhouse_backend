@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -234,34 +236,26 @@ class HouseDealServiceTest {
         .getMonthlyAreaDealInfo("abc", 2022, 3);
 
     Mockito
-        .doReturn(사당동)
+        .doReturn(Arrays.asList(삼평동, 사당동, 상왕십리동))
         .when(areaFacadeService)
-        .searchUpmyundongByName(사당동.getName());
-    Mockito
-        .doReturn(삼평동)
-        .when(areaFacadeService)
-        .searchUpmyundongByName(삼평동.getName());
-    Mockito
-        .doReturn(사당동)
-        .when(areaFacadeService)
-        .searchUpmyundongByName(상왕십리동.getName());
+        .searchUpmyundongsInSigugun("abc");
 
     Mockito
-        .when(houseRepository.batchInsert(Mockito.anyList()))
-        .thenAnswer(new Answer<Integer>() {
+        .when(houseRepository.saveAll(Mockito.anySet()))
+        .thenAnswer(new Answer<List<House>>() {
           @Override
-          public Integer answer(InvocationOnMock invocation) throws Throwable {
+          public List<House> answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return ((List)args[0]).size();
+            return new ArrayList<>((Set)args[0]);
           }
         });
     Mockito
-        .when(houseDealRepository.batchInsert(Mockito.anyList()))
-        .thenAnswer(new Answer<Integer>() {
+        .when(houseDealRepository.saveAll(Mockito.anyList()))
+        .thenAnswer(new Answer<List<HouseDeal>>() {
           @Override
-          public Integer answer(InvocationOnMock invocation) throws Throwable {
+          public List<HouseDeal> answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return ((List)args[0]).size();
+            return (List)args[0];
           }
         });
 

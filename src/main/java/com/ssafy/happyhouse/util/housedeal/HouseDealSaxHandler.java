@@ -50,7 +50,7 @@ public class HouseDealSaxHandler extends DefaultHandler {
 		} else if (name.equals("층")) {
 			floor = Integer.parseInt(str);
 		} else if (name.equals("법정동")) {
-			upmyundongName = str;
+			upmyundongName = str.trim();
 		} else if (name.equals("item")) {
 			Upmyundong upmyundong = Upmyundong.builder().name(upmyundongName).build();
 			House house = House.builder().aptName(aptName).jibun(jibun)

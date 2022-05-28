@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 @Component
 public class HouseDealAPIHandler {
 	
-	private static final String serviceKey = "UiaNkIiGQ1ZQhan1wtEp9PEKXgi1Y9D3ldh4YNxK6wgqMUfCLLC7kTrSOskzdEvZ3xGbUQSyrzZh1pqyTRIFXg%3D%3D";
+	private static final String serviceKey = "DeOFNi7MWb1qt2ViSK2nNbFU7E9JGmDyHV%2Fu6%2F8AAibluqWZYJbPykptZ5cRcKhLAYpQAvAAlfFjAc1NkCcahA%3D%3D";
 	private static final String serviceUrl = "http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade";
 	
 	public List<HouseDeal> getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth)
