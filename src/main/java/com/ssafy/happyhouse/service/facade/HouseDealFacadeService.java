@@ -1,4 +1,4 @@
-package com.ssafy.happyhouse.service.housedeal;
+package com.ssafy.happyhouse.service.facade;
 
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;

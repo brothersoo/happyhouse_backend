@@ -54,6 +54,22 @@ public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
   }
 
   @Override
+  public List<HouseDeal> findByCodeInAndDateBetween(
+      List<String> codes, LocalDate fromDate, LocalDate toDate) {
+    return queryFactory
+        .selectFrom(houseDeal)
+        .join(houseDeal.house, house)
+        .fetchJoin()
+        .join(house.upmyundong, upmyundong)
+        .fetchJoin()
+        .where(
+            upmyundong.code.substring(0, 5).in(codes),
+            houseDeal.dealDate.between(fromDate, toDate)
+        )
+        .fetch();
+  }
+
+  @Override
   public List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type) {
 
