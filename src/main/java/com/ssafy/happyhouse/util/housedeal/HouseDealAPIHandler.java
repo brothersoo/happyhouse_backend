@@ -1,6 +1,7 @@
 package com.ssafy.happyhouse.util.housedeal;
 
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.HousesAndDeals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -22,7 +23,7 @@ public class HouseDealAPIHandler {
 	private static final String serviceKey = "DeOFNi7MWb1qt2ViSK2nNbFU7E9JGmDyHV%2Fu6%2F8AAibluqWZYJbPykptZ5cRcKhLAYpQAvAAlfFjAc1NkCcahA%3D%3D";
 	private static final String serviceUrl = "http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade";
 	
-	public List<HouseDeal> getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth)
+	public HousesAndDeals getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth)
 			throws IOException, ParserConfigurationException, SAXException {
 		String dealDate;
 		if (dealMonth < 10) {
@@ -51,6 +52,6 @@ public class HouseDealAPIHandler {
 		inputSource.setEncoding("UTF-8");
 		saxParser.parse(inputSource, handler);
 		
-		return handler.getDealInfos();
+		return new HousesAndDeals(handler.getHouses(), handler.getHouseDeals());
 	}
 }

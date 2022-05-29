@@ -6,6 +6,7 @@ import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.HousesAndDeals;
 import com.ssafy.happyhouse.domain.housedeal.UpdatedDealInfo;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
@@ -39,9 +40,11 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.test.context.TestPropertySource;
 import org.xml.sax.SAXException;
 
 @ExtendWith(MockitoExtension.class)
+@TestPropertySource("classpath:application.yml")
 class HouseDealServiceTest {
 
   @Mock
@@ -186,10 +189,14 @@ class HouseDealServiceTest {
     HouseDeal deal20 = HouseDeal.builder().house(쩔어아파트).dealDate(LocalDate.of(2022, 4, 27)).build();
 
     // 쩔어아파트를 제외한 아파트들은 이미 데이터베이스에 저장되어있음
+    Set<House> persistedHouseSet = new HashSet<>(Arrays.asList(금오아울림, 진응, 파랗지오, 텐즈휠, 벽솬));
     Map<House, House> persistedHouseMap = new HashMap<>();
-    for (House house : Arrays.asList(금오아울림, 진응, 파랗지오, 텐즈휠, 벽솬)) {
-      persistedHouseMap.putIfAbsent(house, house);
-    }
+    persistedHouseMap.putIfAbsent(금오아울림, 금오아울림);
+    persistedHouseMap.putIfAbsent(진응, 진응);
+    persistedHouseMap.putIfAbsent(파랗지오, 파랗지오);
+    persistedHouseMap.putIfAbsent(텐즈휠, 텐즈휠);
+    persistedHouseMap.putIfAbsent(벽솬, 벽솬);
+
     // 2022년 1월 ~ 4월 19일까지의 매매 데이터들은 저장되어있음
     Set<HouseDeal> persistedHouseDeals = new HashSet<>(Arrays.asList(
         deal1, deal2, deal3, deal4, deal5, deal6, deal7,
@@ -207,8 +214,11 @@ class HouseDealServiceTest {
 
     // 저장된 houses stubbing
     Mockito
-        .when(houseService.getHouseMapInSigugun(dealUpdateDto.getCodes()))
-        .thenReturn(persistedHouseMap);
+        .when(houseService.getHouseSetInSigugun(dealUpdateDto.getCodes()))
+        .thenReturn(persistedHouseSet);
+//    Mockito
+//        .when(houseService.getHouseMapInSigugun(dealUpdateDto.getCodes()))
+//        .thenReturn(persistedHouseMap);
     // 저장된 매매 정보 stubbing
     Mockito
         .when(houseDealService.getHouseDealSetInSigugunBetweenDate(
@@ -242,16 +252,16 @@ class HouseDealServiceTest {
         .when(upmyundongService)
         .getNameUpmyundongMap(dealUpdateDto.getCodes());
 
-    List<HouseDeal> emptyList = new ArrayList<>();
+    HousesAndDeals emptyHousesAndDeals = new HousesAndDeals(new ArrayList<>(), new ArrayList<>());
 
     // 지정된 날짜 이외에는 빈 리스트를 반환하도록 stubbing
     Mockito
-        .doReturn(emptyList)
+        .doReturn(emptyHousesAndDeals)
         .when(houseDealAPIHandler)
         .getMonthlyAreaDealInfo(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt());
     // 지정된 날짜에 해당하는 매매 정보 stubbing (탐색된 지역구와 날짜는 제외)
     Mockito
-        .doReturn(houseDealsInAPR)
+        .doReturn(new HousesAndDeals(Arrays.asList(금오아울림, 진응, 파랗지오, 텐즈휠, 벽솬, 쩔어아파트), houseDealsInAPR))
         .when(houseDealAPIHandler)
         .getMonthlyAreaDealInfo("abc", 2022, 4);
 
@@ -267,22 +277,22 @@ class HouseDealServiceTest {
         });
     // 아파트 saveAll() 메서드가 인자로 넘겨진 list의 size를 반환하도록 stubbing
     Mockito
-        .when(houseService.saveAll(Mockito.anySet()))
-        .thenAnswer(new Answer<List<House>>() {
+        .when(houseService.batchInsert(Mockito.anyList()))
+        .thenAnswer(new Answer<Integer>() {
           @Override
-          public List<House> answer(InvocationOnMock invocation) throws Throwable {
+          public Integer answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return new ArrayList<>((Set)args[0]);
+            return ((List)args[0]).size();
           }
         });
     // 매매 정보 saveAll() 메서드가 인자로 넘겨진 list의 size를 반환하도록 stubbing
     Mockito
-        .when(houseDealService.saveAll(Mockito.anyList()))
-        .thenAnswer(new Answer<List<HouseDeal>>() {
+        .when(houseDealService.batchInsert(Mockito.anyList()))
+        .thenAnswer(new Answer<Integer>() {
           @Override
-          public List<HouseDeal> answer(InvocationOnMock invocation) throws Throwable {
+          public Integer answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();
-            return (List)args[0];
+            return ((List)args[0]).size();
           }
         });
 

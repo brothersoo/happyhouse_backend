@@ -3,6 +3,7 @@ package com.ssafy.happyhouse.repository.house;
 import static com.ssafy.happyhouse.domain.area.QUpmyundong.upmyundong;
 import static com.ssafy.happyhouse.domain.housedeal.QHouse.house;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import java.sql.PreparedStatement;
@@ -55,5 +56,22 @@ public class HouseRepositoryImpl implements HouseRepositoryCustom {
     });
 
     return res.length;
+  }
+
+  public List<House> findByGroupOfNamesIn(List<House> houses) {
+    BooleanBuilder builder = new BooleanBuilder();
+    for (House houseData : houses) {
+      builder.or(upmyundong.name.eq(
+          houseData.getUpmyundong().getName()
+      ).and(
+          house.aptName.eq(houseData.getAptName())
+      ));
+    }
+
+    return queryFactory
+        .selectFrom(house)
+        .join(house.upmyundong, upmyundong)
+        .where(builder)
+        .fetch();
   }
 }

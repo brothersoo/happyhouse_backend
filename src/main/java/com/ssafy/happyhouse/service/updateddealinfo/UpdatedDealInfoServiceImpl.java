@@ -20,7 +20,7 @@ public class UpdatedDealInfoServiceImpl implements UpdatedDealInfoService {
   public Set<UpdatedDealInfo> findByCodeInAndDateBetweenSet(List<String> codes, LocalDate fromDate,
       LocalDate toDate) {
     return new HashSet<>(
-        updatedDealInfoRepository.findByCodeInAndDateBetween(codes, fromDate, toDate));
+        updatedDealInfoRepository.findBySigugunCodeInAndDateBetween(codes, fromDate, toDate));
   }
 
   @Override

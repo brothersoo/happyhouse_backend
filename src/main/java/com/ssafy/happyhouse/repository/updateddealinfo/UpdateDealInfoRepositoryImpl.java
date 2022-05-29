@@ -1,5 +1,6 @@
 package com.ssafy.happyhouse.repository.updateddealinfo;
 
+import static com.ssafy.happyhouse.domain.area.QSigugun.sigugun;
 import static com.ssafy.happyhouse.domain.housedeal.QUpdatedDealInfo.updatedDealInfo;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ public class UpdateDealInfoRepositoryImpl implements UpdatedDealInfoRepositoryCu
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<UpdatedDealInfo> findByCodeInAndDateBetween(List<String> code, LocalDate fromDate, LocalDate toDate) {
-    LocalDate.of(2022, 1, 0);
+  public List<UpdatedDealInfo> findBySigugunCodeInAndDateBetween(List<String> sigugunCodes, LocalDate fromDate, LocalDate toDate) {
     return queryFactory
         .selectFrom(updatedDealInfo)
+        .join(updatedDealInfo.sigugun, sigugun)
         .where(
-            updatedDealInfo.code.in(code),
+            sigugun.code.in(sigugunCodes),
             updatedDealInfo.date.between(fromDate, toDate)
         )
         .fetch();

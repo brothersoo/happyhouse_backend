@@ -10,6 +10,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class HouseDealSaxHandler extends DefaultHandler {
 	private List<HouseDeal> houseDeals;
+	private List<House> houses;
 	private int price;
 	private String type;
 	private int buildYear;
@@ -25,6 +26,7 @@ public class HouseDealSaxHandler extends DefaultHandler {
 
 	public HouseDealSaxHandler() {
 		houseDeals = new ArrayList<>();
+		houses = new ArrayList<>();
 	}
 
 	public void endElement(String uri, String localName, String name) {
@@ -55,6 +57,7 @@ public class HouseDealSaxHandler extends DefaultHandler {
 			Upmyundong upmyundong = Upmyundong.builder().name(upmyundongName).build();
 			House house = House.builder().aptName(aptName).jibun(jibun)
 					.buildYear(buildYear).upmyundong(upmyundong).build();
+			houses.add(house);
 			HouseDeal houseDeal = HouseDeal.builder()
 					.dealDate(LocalDate.of(dealYear, dealMonth, dealDay))
 					.type(type).exclusivePrivateArea(exclusivePrivateArea)
@@ -68,7 +71,11 @@ public class HouseDealSaxHandler extends DefaultHandler {
 		str = new String(ch, start, length);
 	}
 
-	public List<HouseDeal> getDealInfos() {
+	public List<HouseDeal> getHouseDeals() {
 		return houseDeals;
+	}
+
+	public List<House> getHouses() {
+		return houses;
 	}
 }

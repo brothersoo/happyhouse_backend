@@ -8,4 +8,6 @@ public interface HouseRepositoryCustom {
   List<House> findByCodeStartingWithIn(List<String> codes);
 
   int batchInsert(List<House> houses);
+
+  List<House> findByGroupOfNamesIn(List<House> houses);
 }

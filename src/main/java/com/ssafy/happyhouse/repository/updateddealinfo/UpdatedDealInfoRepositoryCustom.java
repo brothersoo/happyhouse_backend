@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface UpdatedDealInfoRepositoryCustom {
 
-  List<UpdatedDealInfo> findByCodeInAndDateBetween(List<String> code, LocalDate fromDate, LocalDate toDate);
+  List<UpdatedDealInfo> findBySigugunCodeInAndDateBetween(List<String> sigugunCodes, LocalDate fromDate, LocalDate toDate);
 }
