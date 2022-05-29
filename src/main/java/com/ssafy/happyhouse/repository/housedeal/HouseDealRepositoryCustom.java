@@ -9,7 +9,7 @@ public interface HouseDealRepositoryCustom {
 
   List<HouseDeal> findByCodeAndYearMonthOfDate(String code, LocalDate date);
 
-  List<HouseDeal> findByCodeAndDateBetween(String code, LocalDate fromDate, LocalDate toDate);
+//  List<HouseDeal> findByUpmyundongIdAndDateBetween(Long upmyundongId, LocalDate fromDate, LocalDate toDate);
 
   List<HouseDeal> findByCodeInAndDateBetween(
       List<String> codes, LocalDate fromDate, LocalDate toDate);

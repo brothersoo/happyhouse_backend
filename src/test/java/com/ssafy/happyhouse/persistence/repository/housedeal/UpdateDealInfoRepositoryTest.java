@@ -44,7 +44,7 @@ class UpdateDealInfoRepositoryTest {
     em.persist(UpdatedDealInfo.builder()
         .sigugun(abc).date(LocalDate.of(2022, 3, 1)).build());
 
-    List<UpdatedDealInfo> updatedDealInfos = updatedDealInfoRepository.findByCodeInAndDateBetween(
+    List<UpdatedDealInfo> updatedDealInfos = updatedDealInfoRepository.findBySigugunCodeInAndDateBetween(
         Arrays.asList("abc"), LocalDate.of(2022, 1, 1), LocalDate.of(2022, 4, 1));
 
     Assertions.assertThat(updatedDealInfos).hasSize(3);

@@ -19,6 +19,11 @@ public class HouseDealServiceImpl implements HouseDealService {
   private final HouseDealRepository houseDealRepository;
 
   @Override
+  public List<HouseDeal> getDealsOfHouse(Long houseId) {
+    return houseDealRepository.findByHouseIdOrderByDealDateDesc(houseId);
+  }
+
+  @Override
   public Set<HouseDeal> getHouseDealSetInSigugunBetweenDate(List<String> codes, LocalDate fromDate,
       LocalDate toDate) {
     return new HashSet<>(houseDealRepository.findByCodeInAndDateBetween(codes, fromDate, toDate));
@@ -30,9 +35,16 @@ public class HouseDealServiceImpl implements HouseDealService {
     return houseDealRepository.saveAll(houseDeals);
   }
 
+  @Override
   public List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type) {
     return houseDealRepository.findHouseAveragePriceByCodeAndDateRange(
         houseIds, fromDate, toDate, type);
+  }
+
+  @Override
+  @Transactional
+  public int batchInsert(List<HouseDeal> houseDeals) {
+    return houseDealRepository.batchInsert(houseDeals);
   }
 }

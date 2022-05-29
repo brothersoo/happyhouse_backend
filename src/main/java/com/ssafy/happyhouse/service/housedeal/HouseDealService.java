@@ -9,6 +9,8 @@ import java.util.Set;
 
 public interface HouseDealService {
 
+  List<HouseDeal> getDealsOfHouse(Long houseId);
+
   Set<HouseDeal> getHouseDealSetInSigugunBetweenDate(
       List<String> codes, LocalDate fromDate, LocalDate toDate);
 
@@ -16,4 +18,6 @@ public interface HouseDealService {
 
   List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type);
+
+  int batchInsert(List<HouseDeal> houseDeals);
 }

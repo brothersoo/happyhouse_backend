@@ -6,14 +6,13 @@ import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import com.ssafy.happyhouse.domain.housedeal.House;
+import com.ssafy.happyhouse.domain.housedeal.HousesAndDeals;
 import com.ssafy.happyhouse.domain.housedeal.UpdatedDealInfo;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.dto.response.graph.Dataset;
-import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
-import com.ssafy.happyhouse.repository.house.HouseRepository;
 import com.ssafy.happyhouse.service.area.sigugun.SigugunService;
 import com.ssafy.happyhouse.service.area.upmyundong.UpmyundongService;
 import com.ssafy.happyhouse.service.house.HouseService;
@@ -39,48 +38,112 @@ import org.xml.sax.SAXException;
 public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
 
   private final HouseDealAPIHandler houseDealAPIHandler;
-  private final HouseDealRepository houseDealRepository;
-  private final HouseRepository houseRepository;
   private final UpdatedDealInfoService updatedDealInfoService;
   private final SigugunService sigugunService;
   private final UpmyundongService upmyundongService;
   private final HouseService houseService;
   private final HouseDealService houseDealService;
 
-  @Override
-  public List<HouseDeal> getDealsByCodeDate(String code, int dealYear, int dealMonth) {
-    return houseDealRepository.findByCodeAndYearMonthOfDate(
-        code, LocalDate.of(dealYear, dealMonth, 1));
-  }
-
-  private List<HouseDeal> getHouseDealsByCodeAndDateBetween(
+  private HousesAndDeals getHouseDealsByCodeAndDateBetween(
       List<String> codes, LocalDate fromDate, LocalDate toDate,
       Map<String, Sigugun> codeSigugunMap, Set<UpdatedDealInfo> updatedDealInfos)
       throws IOException, ParserConfigurationException, SAXException {
     LocalDate now = LocalDate.now();
-    List<HouseDeal> houseDeals = new ArrayList<>();
     List<UpdatedDealInfo> newUpdatedDealInfos = new ArrayList<>();
+
+    HousesAndDeals res = new HousesAndDeals(new ArrayList<>(), new ArrayList<>());
+
     for (LocalDate date = fromDate; date.isBefore(toDate); date = date.plusMonths(1)) {
       for (String code : codes) {
         UpdatedDealInfo updatedDealInfo = UpdatedDealInfo.builder()
             .sigugun(codeSigugunMap.get(code)).date(date).build();
         if (!updatedDealInfos.contains(updatedDealInfo)) {
-          List<HouseDeal> dealsFromAPI = houseDealAPIHandler.getMonthlyAreaDealInfo(
+          HousesAndDeals housesAndDealsFromAPI = houseDealAPIHandler.getMonthlyAreaDealInfo(
               code, date.getYear(), date.getMonthValue());
-          houseDeals.addAll(dealsFromAPI);
-          if (now.getYear() != date.getYear() && now.getMonth() != date.getMonth()) {
+          res.getHouses().addAll(housesAndDealsFromAPI.getHouses());
+          res.getHouseDeals().addAll(housesAndDealsFromAPI.getHouseDeals());
+          if (now.getYear() != date.getYear() || now.getMonth() != date.getMonth()) {
             newUpdatedDealInfos.add(updatedDealInfo);
           }
         }
       }
     }
     updatedDealInfoService.saveAll(newUpdatedDealInfos);
-    return houseDeals;
+    return res;
   }
 
   @Override
   @Transactional
   public int[] updateDeal(DealUpdateDto dealUpdateDto)
+      throws IOException, ParserConfigurationException, SAXException {
+    LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(),
+        dealUpdateDto.getToMonth(), 1).with(lastDayOfMonth());
+
+    // get persisted houses
+    Set<House> persistedHousesSet = houseService.getHouseSetInSigugun(dealUpdateDto.getCodes());
+
+    // get persisted house deals
+    Set<HouseDeal> persistedHouseDeals = houseDealService.getHouseDealSetInSigugunBetweenDate(
+        dealUpdateDto.getCodes(), fromDate, toDate);
+
+    // get already updated area, date
+    Set<UpdatedDealInfo> updatedDealInfos = updatedDealInfoService.findByCodeInAndDateBetweenSet(
+        dealUpdateDto.getCodes(), fromDate, toDate);
+
+    // get code-sigugun map
+    Map<String, Sigugun> codeSigugunMap = sigugunService.getCodeSigugunMap(dealUpdateDto.getCodes());
+
+    // get name-upmyudong map in request siguguns
+    Map<String, Upmyundong> nameUpmyundongMap = upmyundongService.getNameUpmyundongMap(
+        dealUpdateDto.getCodes());
+
+    // api call in date range (monthly)
+    HousesAndDeals housesAndDealsFromOpenAPI = getHouseDealsByCodeAndDateBetween(
+        dealUpdateDto.getCodes(), fromDate, toDate, codeSigugunMap, updatedDealInfos
+    );
+
+    List<HouseDeal> newHouseDeals = new ArrayList<>();
+    Set<House> newHousesSet = new HashSet<>();
+
+    // set upmyundong of house deals from external api and persist
+    for (House house : housesAndDealsFromOpenAPI.getHouses()) {
+      house.setPersistedUpmyundong(nameUpmyundongMap.get(house.getUpmyundong().getName()));
+      if (!persistedHousesSet.contains(house)) {
+        newHousesSet.add(house);
+      }
+    }
+    List<House> newHouses = new ArrayList<>(newHousesSet);
+    int savedHousesNumber = houseService.batchInsert(newHouses);
+
+    // set persisted house for house deals
+    houseService.setPersistedHouse(newHouses, housesAndDealsFromOpenAPI);
+    // get new house deals
+    for (HouseDeal houseDeal : housesAndDealsFromOpenAPI.getHouseDeals()) {
+      if (!persistedHouseDeals.contains(houseDeal)) {
+        newHouseDeals.add(houseDeal);
+      }
+    }
+    int savedHouseDealsNumber = houseDealService.batchInsert(newHouseDeals);
+
+    return new int[]{savedHousesNumber, savedHouseDealsNumber};
+  }
+
+  private Double getNearestData(Map<String, Double> dateAvgPriceMap, int startIndex, List<String> dates) {
+    int gap = 0;
+    while (true) {
+      if (startIndex - gap >= 0 && dateAvgPriceMap.containsKey(dates.get(startIndex - gap))) {
+        return dateAvgPriceMap.get(dates.get(startIndex - gap));
+      } else if (startIndex + gap < dates.size() && dateAvgPriceMap.containsKey(dates.get(startIndex + gap))) {
+        return dateAvgPriceMap.get(dates.get(startIndex + gap));
+      } else {
+        gap++;
+      }
+    }
+  }
+
+  @Transactional
+  public int[] updateDealJpaVersion(DealUpdateDto dealUpdateDto)
       throws IOException, ParserConfigurationException, SAXException {
     LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
     LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(),
@@ -107,12 +170,12 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
         dealUpdateDto.getCodes());
 
     // api call in date range (monthly)
-    List<HouseDeal> houseDealsFromOpenAPI = getHouseDealsByCodeAndDateBetween(
+    HousesAndDeals houseDealsFromOpenAPI = getHouseDealsByCodeAndDateBetween(
         dealUpdateDto.getCodes(), fromDate, toDate, codeSigugunMap, updatedDealInfos
     );
 
     // set upmyundong of house deals from external api
-    for (HouseDeal houseDeal : houseDealsFromOpenAPI) {
+    for (HouseDeal houseDeal : houseDealsFromOpenAPI.getHouseDeals()) {
       houseDeal.getHouse().setPersistedUpmyundong(
           nameUpmyundongMap.get(houseDeal.getHouse().getUpmyundong().getName()));
     }
@@ -120,7 +183,7 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     List<HouseDeal> newHouseDeals = new ArrayList<>();
     Map<House, House> newHousesMap = new HashMap<>();
 
-    for (HouseDeal houseDeal : houseDealsFromOpenAPI) {
+    for (HouseDeal houseDeal : houseDealsFromOpenAPI.getHouseDeals()) {
       if (!persistedHousesMap.containsKey(houseDeal.getHouse())) {
         newHousesMap.putIfAbsent(houseDeal.getHouse(), houseDeal.getHouse());
         if (newHousesMap.containsKey(houseDeal.getHouse())) {
@@ -139,19 +202,6 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
     List<HouseDeal> savedHouseDeals = houseDealService.saveAll(newHouseDeals);
 
     return new int[]{savedHouses.size(), savedHouseDeals.size()};
-  }
-
-  private Double getNearestData(Map<String, Double> dateAvgPriceMap, int startIndex, List<String> dates) {
-    int gap = 0;
-    while (true) {
-      if (startIndex - gap >= 0 && dateAvgPriceMap.containsKey(dates.get(startIndex - gap))) {
-        return dateAvgPriceMap.get(dates.get(startIndex - gap));
-      } else if (startIndex + gap < dates.size() && dateAvgPriceMap.containsKey(dates.get(startIndex + gap))) {
-        return dateAvgPriceMap.get(dates.get(startIndex + gap));
-      } else {
-        gap++;
-      }
-    }
   }
 
   private Dataset generateDataset(Map<String, Map<String, Double>> houseDateAvgPriceMap,
@@ -200,16 +250,5 @@ public class HouseDealFacadeServiceImpl implements HouseDealFacadeService {
         fromDate, toDate, dateRange.getType());
 
     return generateChartData(averagePricesPerUnit);
-  }
-
-  @Override
-  public List<HouseDeal> getDealOfApt(Long hosueId) {
-    List<HouseDeal> dealList = houseDealRepository.findByHouseIdOrderByDealDateDesc(hosueId);
-    return dealList;
-  }
-
-  @Override
-  public List<House> getHousesInArea(String code) {
-    return houseRepository.findByCodeStartingWith(code);
   }
 }

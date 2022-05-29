@@ -43,15 +43,15 @@ public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
         .fetch();
   }
 
-  @Override
-  public List<HouseDeal> findByCodeAndDateBetween(String code, LocalDate fromDate, LocalDate toDate) {
-    return queryFactory.selectFrom(houseDeal)
-        .leftJoin(houseDeal.house, house)
-        .leftJoin(house.upmyundong, upmyundong)
-        .where(upmyundong.code.startsWith(code),
-            houseDeal.dealDate.between(fromDate, toDate))
-        .fetch();
-  }
+//  @Override
+//  public List<HouseDeal> findByUpmyundongIdAndDateBetween(Long upmyundongId, LocalDate fromDate, LocalDate toDate) {
+//    return queryFactory.selectFrom(houseDeal)
+//        .leftJoin(houseDeal.house, house)
+//        .leftJoin(house.upmyundong, upmyundong)
+//        .where(upmyundong.id.eq(upmyundongId),
+//            houseDeal.dealDate.between(fromDate, toDate))
+//        .fetch();
+//  }
 
   @Override
   public List<HouseDeal> findByCodeInAndDateBetween(
