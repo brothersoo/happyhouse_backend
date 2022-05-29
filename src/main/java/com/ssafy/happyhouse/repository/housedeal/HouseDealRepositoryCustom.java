@@ -14,5 +14,5 @@ public interface HouseDealRepositoryCustom {
   List<AveragePricePerUnit> findHouseAveragePriceByCodeAndDateRange(List<Long> houseIds,
       LocalDate fromDate, LocalDate toDate, String type);
 
-  int batchSave(List<HouseDeal> deals);
+  int batchInsert(List<HouseDeal> deals);
 }

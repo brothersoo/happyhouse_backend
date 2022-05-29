@@ -83,7 +83,7 @@ public class HouseDealRepositoryImpl implements HouseDealRepositoryCustom {
         .fetch();
   }
 
-  public int batchSave(List<HouseDeal> deals) {
+  public int batchInsert(List<HouseDeal> deals) {
     if (deals.isEmpty()) {
       return 0;
     }

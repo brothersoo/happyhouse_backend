@@ -10,22 +10,19 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@RequiredArgsConstructor
+@Component
 public class HouseDealAPIHandler {
 	
-	private static final String serviceKey = "UiaNkIiGQ1ZQhan1wtEp9PEKXgi1Y9D3ldh4YNxK6wgqMUfCLLC7kTrSOskzdEvZ3xGbUQSyrzZh1pqyTRIFXg%3D%3D";
+	private static final String serviceKey = "DeOFNi7MWb1qt2ViSK2nNbFU7E9JGmDyHV%2Fu6%2F8AAibluqWZYJbPykptZ5cRcKhLAYpQAvAAlfFjAc1NkCcahA%3D%3D";
 	private static final String serviceUrl = "http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade";
 	
-	
-	private static HouseDealAPIHandler houseDealAPIHandler = new HouseDealAPIHandler();
-	
-	public static HouseDealAPIHandler getInstance() {
-		return houseDealAPIHandler;
-	}
-	
-	public List<HouseDeal> getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth, Long upmyundongId)
+	public List<HouseDeal> getMonthlyAreaDealInfo(String code, int dealYear, int dealMonth)
 			throws IOException, ParserConfigurationException, SAXException {
 		String dealDate;
 		if (dealMonth < 10) {
@@ -48,7 +45,7 @@ public class HouseDealAPIHandler {
 		InputStream in = conn.getInputStream();
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
-		HouseDealSaxHandler handler = new HouseDealSaxHandler(upmyundongId);
+		HouseDealSaxHandler handler = new HouseDealSaxHandler();
 		
 		InputSource inputSource = new InputSource(in);
 		inputSource.setEncoding("UTF-8");

@@ -8,4 +8,6 @@ import org.springframework.data.repository.query.Param;
 public interface UpmyundongRepository extends JpaRepository<Upmyundong, Long> {
 
   List<Upmyundong> findByCodeStartingWith(@Param("") String sigugunCode);
+
+  Upmyundong findFirstByName(@Param("") String name);
 }

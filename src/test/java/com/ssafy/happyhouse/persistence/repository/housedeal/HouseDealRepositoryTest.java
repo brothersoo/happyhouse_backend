@@ -105,7 +105,7 @@ class HouseDealRepositoryTest {
       houseDeals.add(houseDeal);
     }
 
-    int res = houseDealRepository.batchSave(houseDeals);
+    int res = houseDealRepository.batchInsert(houseDeals);
 
     assertThat(res).isEqualTo(houseDeals.size());
 

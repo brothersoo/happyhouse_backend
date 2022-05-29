@@ -1,10 +1,8 @@
 package com.ssafy.happyhouse.repository.house;
 
 import com.ssafy.happyhouse.domain.housedeal.House;
-import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
