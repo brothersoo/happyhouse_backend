@@ -8,7 +8,7 @@ import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
-import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeService;
+import com.ssafy.happyhouse.service.facade.HouseDealFacadeService;
 
 import io.swagger.annotations.ApiOperation;
 import java.util.List;

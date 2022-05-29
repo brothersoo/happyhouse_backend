@@ -3,7 +3,7 @@ package com.ssafy.happyhouse.controller;
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
-import com.ssafy.happyhouse.service.area.AreaFacadeServiceImpl;
+import com.ssafy.happyhouse.service.facade.AreaFacadeServiceImpl;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

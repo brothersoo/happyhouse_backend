@@ -1,24 +1,32 @@
 package com.ssafy.happyhouse.unit.service;
 
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
+
+import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import com.ssafy.happyhouse.domain.housedeal.HouseDeal;
+import com.ssafy.happyhouse.domain.housedeal.UpdatedDealInfo;
 import com.ssafy.happyhouse.dto.request.DealUpdateDto;
 import com.ssafy.happyhouse.dto.response.AveragePricePerUnit;
 import com.ssafy.happyhouse.dto.response.DateRange;
 import com.ssafy.happyhouse.dto.response.graph.ChartData;
 import com.ssafy.happyhouse.dto.response.graph.Dataset;
-import com.ssafy.happyhouse.repository.house.HouseRepository;
-import com.ssafy.happyhouse.repository.housedeal.HouseDealRepository;
-import com.ssafy.happyhouse.service.area.AreaFacadeService;
-import com.ssafy.happyhouse.service.housedeal.HouseDealFacadeServiceImpl;
+import com.ssafy.happyhouse.service.area.sigugun.SigugunService;
+import com.ssafy.happyhouse.service.area.upmyundong.UpmyundongService;
+import com.ssafy.happyhouse.service.house.HouseService;
+import com.ssafy.happyhouse.service.facade.HouseDealFacadeServiceImpl;
+import com.ssafy.happyhouse.service.housedeal.HouseDealService;
+import com.ssafy.happyhouse.service.updateddealinfo.UpdatedDealInfoService;
 import com.ssafy.happyhouse.util.housedeal.HouseDealAPIHandler;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import org.assertj.core.api.Assertions;
@@ -37,15 +45,19 @@ import org.xml.sax.SAXException;
 class HouseDealServiceTest {
 
   @Mock
-  private HouseDealRepository houseDealRepository;
+  private SigugunService sigugunService;
   @Mock
-  private HouseRepository houseRepository;
+  private UpmyundongService upmyundongService;
+  @Mock
+  private HouseService houseService;
+  @Mock
+  private HouseDealService houseDealService;
   @Mock
   private HouseDealAPIHandler houseDealAPIHandler;
   @Mock
-  private AreaFacadeService areaFacadeService;
+  private UpdatedDealInfoService updatedDealInfoService;
   @InjectMocks
-  private HouseDealFacadeServiceImpl houseDealService;
+  private HouseDealFacadeServiceImpl houseDealFacadeService;
 
   @Test
   @DisplayName("그래프 데이터 생성")
@@ -66,13 +78,13 @@ class HouseDealServiceTest {
     houseIds.add(1L);
     houseIds.add(2L);
     Mockito
-        .when(houseDealRepository.findHouseAveragePriceByCodeAndDateRange(
+        .when(houseDealService.findHouseAveragePriceByCodeAndDateRange(
             houseIds, LocalDate.of(2022, 1, 1),
             LocalDate.of(2022, 6, 30), "month"
         ))
         .thenReturn(averagePricePerUnits);
 
-    ChartData chartData = houseDealService.getChartDataOfHouses(houseIds,
+    ChartData chartData = houseDealFacadeService.getChartDataOfHouses(houseIds,
         new DateRange("month",2022, 2022, 1, 6));
 
     List<String> expectedLabels = new ArrayList<>();
@@ -117,131 +129,145 @@ class HouseDealServiceTest {
   @DisplayName("거래 목록 갱신 테스트")
   void updateHouseDeal() throws IOException, ParserConfigurationException, SAXException {
     DealUpdateDto dealUpdateDto = new DealUpdateDto();
-    dealUpdateDto.setCode("abc");
+    dealUpdateDto.setCodes(Arrays.asList("abc", "가나다"));
     dealUpdateDto.setFromYear(2020);
     dealUpdateDto.setFromMonth(1);
     dealUpdateDto.setToYear(2022);
-    dealUpdateDto.setToMonth(3);
+    dealUpdateDto.setToMonth(4);
 
-    Upmyundong 사당동 = Upmyundong.builder().name("사당동").build();
-    Upmyundong 삼평동 = Upmyundong.builder().name("삼평동").build();
-    Upmyundong 상왕십리동 = Upmyundong.builder().name("상왕십리동").build();
+    LocalDate fromDate = LocalDate.of(dealUpdateDto.getFromYear(), dealUpdateDto.getFromMonth(), 1);
+    LocalDate toDate = LocalDate.of(dealUpdateDto.getToYear(), dealUpdateDto.getToMonth(), 1)
+        .with(lastDayOfMonth());
 
-    House 금오아울림 = House.builder().aptName("금오아울림").upmyundong(삼평동).build();
-    House 진응 = House.builder().aptName("진응").upmyundong(삼평동).build();
-    House 파랗지오 = House.builder().aptName("파랗지오").upmyundong(사당동).build();
-    House 쩔어아파트 = House.builder().aptName("쩔어아파트").upmyundong(사당동).build();
-    House 텐즈휠 = House.builder().aptName("텐즈휠").upmyundong(상왕십리동).build();
-    House 벽솬 = House.builder().aptName("벽솬").upmyundong(상왕십리동).build();
+    Sigugun abc = Sigugun.builder().code("abc").build();
+    Sigugun 가나다 = Sigugun.builder().code("가나다").build();
+    Map<String, Sigugun> codeSigugunMap = new HashMap<>();
+    for (Sigugun sigugun : Arrays.asList(abc, 가나다)) {
+      codeSigugunMap.putIfAbsent(sigugun.getCode(), sigugun);
+    }
 
-    HouseDeal deal1 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2020, 1, 3)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal2 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2020, 3, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal3 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2021, 5, 1)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal4 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2021, 10, 8)).type("A").floor(1).price(12000).exclusivePrivateArea(1).build();
-    HouseDeal deal5 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 1, 21)).type("A").floor(1).price(12000).exclusivePrivateArea(1).build();
-    HouseDeal deal6 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2020, 3, 11)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal7 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2021, 4, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal8 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2022, 3, 17)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal9 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2020, 5, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal10 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2020, 10, 1)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal11 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2022, 3, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal12 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2021, 10, 8)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal13 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 2, 1)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal14 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 2, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal15 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 3, 19)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal16 = HouseDeal.builder().house(벽솬).dealDate(LocalDate.of(2020, 7, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal17 = HouseDeal.builder().house(벽솬).dealDate(LocalDate.of(2020, 11, 8)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
-    HouseDeal deal18 = HouseDeal.builder().house(쩔어아파트).dealDate(LocalDate.of(2022, 2, 10)).type("A").floor(1).price(10000).exclusivePrivateArea(1).build();
+    Upmyundong 삼평동 = Upmyundong.builder().name("삼평동").code("abc1").sigugun(abc).build();
+    Upmyundong 사당동 = Upmyundong.builder().name("사당동").code("abc2").sigugun(abc).build();
+    Upmyundong 상왕십리동 = Upmyundong.builder().name("상왕십리동").code("가나다1").sigugun(가나다).build();
+    Map<String, Upmyundong> nameUpmyundongMap = new HashMap<>();
+    for (Upmyundong upmyundong : Arrays.asList(삼평동, 사당동, 상왕십리동)) {
+      nameUpmyundongMap.putIfAbsent(upmyundong.getName(), upmyundong);
+    }
 
-    List<House> persistedHouses = Arrays.asList(금오아울림, 진응, 파랗지오, 텐즈휠, 벽솬);
-    List<HouseDeal> persistedHouseDeals = Arrays.asList(
-        deal1, deal2, deal3, deal4, deal6, deal7, deal9, deal10, deal12, deal16, deal17);
+    House 금오아울림 = House.builder().id(1L).aptName("금오아울림").upmyundong(삼평동).build();
+    House 진응 = House.builder().id(2L).aptName("진응").upmyundong(삼평동).build();
+    House 텐즈휠 = House.builder().id(3L).aptName("텐즈휠").upmyundong(상왕십리동).build();
+    House 벽솬 = House.builder().id(4L).aptName("벽솬").upmyundong(상왕십리동).build();
+    House 파랗지오 = House.builder().id(5L).aptName("파랗지오").upmyundong(사당동).build();
+    House 쩔어아파트 = House.builder().id(6L).aptName("쩔어아파트").upmyundong(사당동).build();
 
-    List<HouseDeal> houseDealsAPI202001 = Arrays.asList(deal1);
-    List<HouseDeal> houseDealsAPI202003 = Arrays.asList(deal2, deal6);
-    List<HouseDeal> houseDealsAPI202005 = Arrays.asList(deal9);
-    List<HouseDeal> houseDealsAPI202007 = Arrays.asList(deal16);
-    List<HouseDeal> houseDealsAPI202010 = Arrays.asList(deal10);
-    List<HouseDeal> houseDealsAPI202011 = Arrays.asList(deal17);
-    List<HouseDeal> houseDealsAPI202104 = Arrays.asList(deal7);
-    List<HouseDeal> houseDealsAPI202105 = Arrays.asList(deal3);
-    List<HouseDeal> houseDealsAPI202110 = Arrays.asList(deal4);
-    List<HouseDeal> houseDealsAPI202201 = Arrays.asList(deal5);
-    List<HouseDeal> houseDealsAPI202202 = Arrays.asList(deal13, deal14, deal18);
-    List<HouseDeal> houseDealsAPI202203 = Arrays.asList(deal8, deal11, deal15);
+    // 2022년 4월 19일 이전 매매 데이터
+    HouseDeal deal1 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 4, 3)).build();
+    HouseDeal deal2 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 4, 10)).build();
+    HouseDeal deal3 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 4, 11)).build();
+    HouseDeal deal4 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 4, 17)).build();
+    HouseDeal deal5 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2022, 4, 1)).build();
+    HouseDeal deal6 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2022, 4, 3)).build();
+    HouseDeal deal7 = HouseDeal.builder().house(진응).dealDate(LocalDate.of(2022, 4, 17)).build();
+    HouseDeal deal8 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 4, 4)).build();
+    HouseDeal deal9 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 4, 5)).build();
+    HouseDeal deal10 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 4, 9)).build();
+    HouseDeal deal11 = HouseDeal.builder().house(텐즈휠).dealDate(LocalDate.of(2022, 4, 19)).build();
+    HouseDeal deal12 = HouseDeal.builder().house(벽솬).dealDate(LocalDate.of(2022, 4, 10)).build();
+    HouseDeal deal13 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2022, 4, 10)).build();
+    HouseDeal deal14 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2022, 4, 14)).build();
 
+    // 2022년 4월 20일 이후 매매 데이터
+    HouseDeal deal15 = HouseDeal.builder().house(금오아울림).dealDate(LocalDate.of(2022, 4, 20)).build();
+    HouseDeal deal16 = HouseDeal.builder().house(벽솬).dealDate(LocalDate.of(2022, 4, 23)).build();
+    HouseDeal deal17 = HouseDeal.builder().house(파랗지오).dealDate(LocalDate.of(2022, 4, 23)).build();
+    HouseDeal deal18 = HouseDeal.builder().house(쩔어아파트).dealDate(LocalDate.of(2022, 4, 25)).build();
+    HouseDeal deal19 = HouseDeal.builder().house(쩔어아파트).dealDate(LocalDate.of(2022, 4, 26)).build();
+    HouseDeal deal20 = HouseDeal.builder().house(쩔어아파트).dealDate(LocalDate.of(2022, 4, 27)).build();
+
+    // 쩔어아파트를 제외한 아파트들은 이미 데이터베이스에 저장되어있음
+    Map<House, House> persistedHouseMap = new HashMap<>();
+    for (House house : Arrays.asList(금오아울림, 진응, 파랗지오, 텐즈휠, 벽솬)) {
+      persistedHouseMap.putIfAbsent(house, house);
+    }
+    // 2022년 1월 ~ 4월 19일까지의 매매 데이터들은 저장되어있음
+    Set<HouseDeal> persistedHouseDeals = new HashSet<>(Arrays.asList(
+        deal1, deal2, deal3, deal4, deal5, deal6, deal7,
+        deal8, deal9, deal10, deal11, deal12, deal13, deal14
+    ));
+
+    List<HouseDeal> houseDealsInAPR = new ArrayList<>();
+    houseDealsInAPR.add(deal15);
+    houseDealsInAPR.add(deal16);
+    houseDealsInAPR.add(deal17);
+    houseDealsInAPR.add(deal18);
+    houseDealsInAPR.add(deal19);
+    houseDealsInAPR.add(deal20);
+    houseDealsInAPR.addAll(persistedHouseDeals);
+
+    // 저장된 houses stubbing
     Mockito
-        .when(houseRepository.findByCodeStartingWith(dealUpdateDto.getCode()))
-        .thenReturn(persistedHouses);
+        .when(houseService.getHouseMapInSigugun(dealUpdateDto.getCodes()))
+        .thenReturn(persistedHouseMap);
+    // 저장된 매매 정보 stubbing
     Mockito
-        .when(houseDealRepository.findByCodeAndDateBetween(
-            "abc", LocalDate.of(2020, 1, 1),
-            LocalDate.of(2022, 3, 31)
-        ))
+        .when(houseDealService.getHouseDealSetInSigugunBetweenDate(
+            dealUpdateDto.getCodes(), fromDate, toDate))
         .thenReturn(persistedHouseDeals);
+
+    // abc와 가나다의 2020년 1월 ~ 2022년 3월까지는 이미 정보를 갱신한 날짜로 지정
+    List<UpdatedDealInfo> updatedDealInfosList = new ArrayList<>();
+    for (LocalDate date = fromDate; date.isBefore(LocalDate.of(2022, 4, 1)); date = date.plusMonths(1)) {
+      updatedDealInfosList.add(UpdatedDealInfo.builder().sigugun(abc).date(date).build());
+      updatedDealInfosList.add(UpdatedDealInfo.builder().sigugun(가나다).date(date).build());
+    }
+    updatedDealInfosList.sort((UpdatedDealInfo a, UpdatedDealInfo b) -> {
+      return b.getDate().compareTo(a.getDate());
+    });
+    Set<UpdatedDealInfo> updatedDealInfos = new HashSet<>(updatedDealInfosList);
+
+    // 이미 갱신한 지역, 날짜 데이터 stubbing
+    Mockito
+        .doReturn(updatedDealInfos)
+        .when(updatedDealInfoService)
+        .findByCodeInAndDateBetweenSet(dealUpdateDto.getCodes(), fromDate, toDate);
+
+    Mockito
+        .doReturn(codeSigugunMap)
+        .when(sigugunService)
+        .getCodeSigugunMap(dealUpdateDto.getCodes());
+
+    Mockito
+        .doReturn(nameUpmyundongMap)
+        .when(upmyundongService)
+        .getNameUpmyundongMap(dealUpdateDto.getCodes());
 
     List<HouseDeal> emptyList = new ArrayList<>();
 
+    // 지정된 날짜 이외에는 빈 리스트를 반환하도록 stubbing
     Mockito
         .doReturn(emptyList)
         .when(houseDealAPIHandler)
         .getMonthlyAreaDealInfo(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt());
+    // 지정된 날짜에 해당하는 매매 정보 stubbing (탐색된 지역구와 날짜는 제외)
     Mockito
-        .doReturn(houseDealsAPI202001)
+        .doReturn(houseDealsInAPR)
         .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 1);
-    Mockito
-        .doReturn(houseDealsAPI202003)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 3);
-    Mockito
-        .doReturn(houseDealsAPI202005)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 5);
-    Mockito
-        .doReturn(houseDealsAPI202007)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 7);
-    Mockito
-        .doReturn(houseDealsAPI202010)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 10);
-    Mockito
-        .doReturn(houseDealsAPI202011)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2020, 11);
-    Mockito
-        .doReturn(houseDealsAPI202104)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2021, 4);
-    Mockito
-        .doReturn(houseDealsAPI202105)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2021, 5);
-    Mockito
-        .doReturn(houseDealsAPI202110)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2021, 10);
-    Mockito
-        .doReturn(houseDealsAPI202201)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2022, 1);
-    Mockito
-        .doReturn(houseDealsAPI202202)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2022, 2);
-    Mockito
-        .doReturn(houseDealsAPI202203)
-        .when(houseDealAPIHandler)
-        .getMonthlyAreaDealInfo("abc", 2022, 3);
+        .getMonthlyAreaDealInfo("abc", 2022, 4);
 
+    // UpdatedDealInfo saveAll() 메서드가 인자로 넘겨진 list의 size를 반환하도록 stubbing
     Mockito
-        .doReturn(Arrays.asList(삼평동, 사당동, 상왕십리동))
-        .when(areaFacadeService)
-        .searchUpmyundongsInSigugun("abc");
-
+        .when(updatedDealInfoService.saveAll(Mockito.anyList()))
+        .thenAnswer(new Answer<List<House>>() {
+          @Override
+          public List<House> answer(InvocationOnMock invocation) throws Throwable {
+            Object[] args = invocation.getArguments();
+            return (List)args[0];
+          }
+        });
+    // 아파트 saveAll() 메서드가 인자로 넘겨진 list의 size를 반환하도록 stubbing
     Mockito
-        .when(houseRepository.saveAll(Mockito.anySet()))
+        .when(houseService.saveAll(Mockito.anySet()))
         .thenAnswer(new Answer<List<House>>() {
           @Override
           public List<House> answer(InvocationOnMock invocation) throws Throwable {
@@ -249,8 +275,9 @@ class HouseDealServiceTest {
             return new ArrayList<>((Set)args[0]);
           }
         });
+    // 매매 정보 saveAll() 메서드가 인자로 넘겨진 list의 size를 반환하도록 stubbing
     Mockito
-        .when(houseDealRepository.saveAll(Mockito.anyList()))
+        .when(houseDealService.saveAll(Mockito.anyList()))
         .thenAnswer(new Answer<List<HouseDeal>>() {
           @Override
           public List<HouseDeal> answer(InvocationOnMock invocation) throws Throwable {
@@ -259,12 +286,20 @@ class HouseDealServiceTest {
           }
         });
 
-    List<HouseDeal> houseDealsIn2022 = Arrays.asList(
-        deal5, deal8, deal11, deal13, deal14, deal15, deal18);
+    // when
+    int[] res = houseDealFacadeService.updateDeal(dealUpdateDto);
 
-    int[] res = houseDealService.updateDeal(dealUpdateDto);
+    // then
 
+    // 새로 저장된 아파트는 쩔어아파트 한개다.
     Assertions.assertThat(res[0]).isEqualTo(1);
-    Assertions.assertThat(res[1]).isEqualTo(houseDealsIn2022.size());
+
+    // 새로 저장된 매매 정보는 2022년 1월 부터 2022년 3월까지의 정보들이다. (houseDealsIn2022)
+    Assertions.assertThat(res[1]).isEqualTo(houseDealsInAPR.size() - persistedHouseDeals.size());
+
+    // 외부 api 호출은 1(4월달 한번) * 2(abc 지역구, 가나다 지역구)로 총 두번만 실행된다.
+    Mockito
+        .verify(houseDealAPIHandler, Mockito.times(2))
+        .getMonthlyAreaDealInfo(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt());
   }
 }

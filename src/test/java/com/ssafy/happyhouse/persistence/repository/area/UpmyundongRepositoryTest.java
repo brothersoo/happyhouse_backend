@@ -6,7 +6,7 @@ import com.ssafy.happyhouse.config.QueryDslConfig;
 import com.ssafy.happyhouse.domain.area.Sido;
 import com.ssafy.happyhouse.domain.area.Sigugun;
 import com.ssafy.happyhouse.domain.area.Upmyundong;
-import com.ssafy.happyhouse.repository.area.UpmyundongRepository;
+import com.ssafy.happyhouse.repository.area.upmyundong.UpmyundongRepository;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

@@ -11,4 +11,6 @@ public interface SigugunRepository extends JpaRepository<Sigugun, Long> {
 //  List<Sigugun> findAllWithSido();
 
   List<Sigugun> findByCodeStartingWith(@Param("") String sidoCode);
+
+  List<Sigugun> findByCodeIn(@Param("") List<String> codes);
 }

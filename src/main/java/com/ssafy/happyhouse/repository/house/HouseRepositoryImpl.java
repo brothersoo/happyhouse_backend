@@ -1,5 +1,9 @@
 package com.ssafy.happyhouse.repository.house;
 
+import static com.ssafy.happyhouse.domain.area.QUpmyundong.upmyundong;
+import static com.ssafy.happyhouse.domain.housedeal.QHouse.house;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.ssafy.happyhouse.domain.housedeal.House;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -15,7 +19,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class HouseRepositoryImpl implements HouseRepositoryCustom {
 
+  private final JPAQueryFactory queryFactory;
   private final JdbcTemplate jdbcTemplate;
+
+  public List<House> findByCodeStartingWithIn(List<String> codes) {
+    return queryFactory
+        .selectFrom(house)
+        .join(house.upmyundong, upmyundong)
+        .fetchJoin()
+        .where(upmyundong.code.substring(0, 5).in(codes))
+        .fetch();
+  }
 
   public int batchInsert(List<House> houses) {
     if (houses.isEmpty()) {

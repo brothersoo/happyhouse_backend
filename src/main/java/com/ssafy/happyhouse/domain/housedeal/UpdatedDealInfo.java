@@ -1,6 +1,7 @@
-package com.ssafy.happyhouse.domain.area;
+package com.ssafy.happyhouse.domain.housedeal;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ssafy.happyhouse.domain.area.Sigugun;
+import java.time.LocalDate;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,38 +17,26 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access= AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "upmyundong")
+@Table(name = "updated_deal_info")
 @Entity
-public class Upmyundong {
+public class UpdatedDealInfo {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "upmyundong_id")
+  @Column(name = "updated_deal_info_id")
   private Long id;
 
-  private String code;
-
-  private String name;
-
-  private Float lat;
-
-  private Float lng;
+  private LocalDate date;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="sigugun_id")
+  @JoinColumn(name = "sigugun_id")
   private Sigugun sigugun;
 
   @Builder
-  public Upmyundong(Long id, String code, String name, Float lat, Float lng,
-      Sigugun sigugun) {
-    this.id = id;
-    this.code = code;
-    this.name = name;
-    this.lat = lat;
-    this.lng = lng;
+  public UpdatedDealInfo(LocalDate date, Sigugun sigugun) {
+    this.date = date;
     this.sigugun = sigugun;
   }
 
@@ -59,12 +48,13 @@ public class Upmyundong {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Upmyundong that = (Upmyundong) o;
-    return Objects.equals(name, that.name);
+    UpdatedDealInfo that = (UpdatedDealInfo) o;
+    return Objects.equals(date, that.date) && Objects.equals(sigugun.getCode(),
+        that.sigugun.getCode());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name);
+    return Objects.hash(date, sigugun.getCode());
   }
 }
